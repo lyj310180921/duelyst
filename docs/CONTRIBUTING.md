@@ -1,288 +1,217 @@
-# Contributing to OpenDuelyst
+# 为 OpenDuelyst 做出贡献
 
-Thanks for your interest in contributing to OpenDuelyst!
-This document will introduce you to the code and guide you through making a
-change.
+感谢您有兴趣为 OpenDuelyst 做出贡献！
+本文档将向您介绍代码并指导您进行更改。
 
-## Table of Contents
+## 目录
 
-- [Helpful Links](#helpful-links)
-- [Code Structure](#code-structure)
-- [Setting up a Development Environment](#dev-environment)
-- [Starting the Game Locally](#starting-the-game)
-- [Common Troubleshooting Steps](#troubleshooting)
-- [Making App (Frontend) Changes](#frontend-changes)
-- [Making Server/Worker (Backend) Changes](#backend-changes)
-- [Opening Pull Requests](#pull-requests)
-- [Versioning](#versioning)
-- [Where to Get Help](#get-help)
+- [有用的网址](#helpful-links)
+- [代码结构](#code-structure)
+- [搭建开发环境](#dev-environment)
+- [本地启动游戏](#starting-the-game)
+- [常见故障排除步骤](#troubleshooting)
+- [进行应用程序（前端）更改](#frontend-changes)
+- [进行服务器/工作线程（后端）更改](#backend-changes)
+- [打开拉取请求](#pull-requests)
+- [版本控制](#versioning)
+- [从哪里获得帮助](#get-help)
 
-## Helpful Links <a id="helpful-links" />
+## 有用的网址 <a id="helpful-links" />
 
-- [OpenDuelyst Roadmap](ROADMAP.md)
-- [Architecture Documentation](ARCHITECTURE.md)
-- [Open Issues](https://github.com/open-duelyst/duelyst/issues)
-- [Node.js v16 API Reference](https://nodejs.org/dist/latest-v16.x/docs/api/)
-- [Redis Documentation](https://redis.io/docs/)
-- [Postgres v14 Documentation](https://www.postgresql.org/docs/14/index.html)
-- [Firebase API Reference (Frontend)](https://firebase.google.com/docs/reference/node/)
-- [Firebase API Reference (Backend)](https://firebase.google.com/docs/reference/admin/node/)
-- [Socket.io v4 Documentation](https://socket.io/docs/v4/)
-- [JSON Web Token Documentation](https://jwt.io/)
-- [Mocha Unit Testing API Reference](https://mochajs.org/api/)
-- [Chai Assertion API Reference](https://www.chaijs.com/api/)
+- [OpenDuelyst 路线图](ROADMAP.md)
+- [架构文档](ARCHITECTURE.md)
+- [开放式问题](https://github.com/open-duelyst/duelyst/issues)
+- [Node.js v16 API 参考](https://nodejs.org/dist/latest-v16.x/docs/api/)
+- [Redis 文档](https://redis.io/docs/)
+- [Postgres v14 文档](https://www.postgresql.org/docs/14/index.html)
+- [Firebase API 参考（前端）](https://firebase.google.com/docs/reference/node/)
+- [Firebase API 参考（后端）](https://firebase.google.com/docs/reference/admin/node/)
+- [Socket.io v4 文档](https://socket.io/docs/v4/)
+- [JSON Web 令牌文档](https://jwt.io/)
+- [Mocha 单元测试 API 参考](https://mochajs.org/api/)
+- [Chai 断言 API 参考](https://www.chaijs.com/api/)
 
-## Code Structure <a id="code-structure" />
+## 代码结构 <a id="code-structure" />
 
-An in-depth explanation of the code can be found in the Architecture
-Documentation above. It contains some pointers to the specific places in the
-code used by each service or component.
+代码的深入解释可以在上面的架构文档中找到。 它包含一些指向每个服务或组件使用的代码中特定位置的指针。
 
-To help you get acquainted more quickly, here is a list of files and
-directories commonly used when working on the game:
+为了帮助您更快地熟悉，这里列出了开发游戏时常用的文件和目录：
 
-- `app/` contains code for the frontend / game client
-- `config/` contains configuration for backend services
-- `docker-compose.yaml` contains our Docker container configuration
-- `docs` contains documentation, including this guide
-- `gulp/` and `gulpfile.babel.js` contain workflow automation, for tasks like
-	building the code
-- `package.json` contains our Node.js dependencies
-- `server` contains code for the HTTP API server and the WebSocket game servers
-- `terraform` contains code for provisioning staging and production
-	environments
-- `test` contains unit and integration tests
-- `worker` contains code for the worker, which processes asynchronous
-	background jobs
+- `app/` 包含前端/游戏客户端的代码
+- `config/` 包含后端服务的配置
+- `docker-compose.yaml` 包含我们的 Docker 容器配置
+- `docs` 包含文档，包括本指南
+- `gulp/` 和 `gulpfile.babel.js` 包含工作流程自动化，适用于诸如
+构建代码
+- `package.json` 包含我们的 Node.js 依赖项
+- `server` 包含 HTTP API 服务器和 WebSocket 游戏服务器的代码
+- `terraform` 包含用于配置暂存和生产的代码
+环境
+- `test` 包含单元测试和集成测试
+- `worker` 包含用于异步处理的工作程序的代码
+后台工作
 
-#### Code Style and Linting
+#### 代码风格和 Linting
 
-For JavaScript code, we use ESLint to enforce code style.
-Its configuration can be found in `.eslintrc.json`.
-You can run the linter with `yarn lint:js`.
-You can automatically format JS code to meet these standards by running
-`yarn format:js`.
+对于 JavaScript 代码，我们使用 ESLint 来强制代码风格。
+它的配置可以在`.eslintrc.json`中找到。
+您可以使用`yarn lint:js`运行 linter。
+您可以通过运行`yarn format:js`自动格式化 JS 代码以满足这些标准。
 
-For CoffeeScript code, we use CoffeeLint to enforce code style.
-Its configuration can be found in `coffeelint.json`.
-You can run linters with `yarn lint:coffee`, `yarn lint:coffee:app`, or
-`yarn lint:coffee:backend`.
+对于 CoffeeScript 代码，我们使用 CoffeeLint 来强制代码风格。
+它的配置可以在 `coffeelint.json` 中找到。
+您可以使用`yarn lint:coffee`、`yarn lint:coffee:app`或`yarn lint:coffee:backend`运行 linter。
 
-#### Regarding JavaScript, CoffeeScript, and TypeScript
+#### 关于 JavaScript、CoffeeScript 和 TypeScript
 
-Most of the code is written in CoffeeScript, which compiles into JavaScript. We
-are considering replacing CoffeeScript with JavaScript (see
-[Issue #4](https://github.com/open-duelyst/duelyst/issues/4)).
+大部分代码是用 CoffeeScript 编写的，它会编译成 JavaScript。 我们正在考虑用 JavaScript 替换 CoffeeScript
 
-We should also consider moving to TypeScript where possible.
-There is a fairly strict `tsconfig.json` in the repo which has been
-preconfigured for new code. After writing new TypeScript code, you can run
-`yarn tsc` to build it using this config.
+(请参阅 [Issue #4](https://github.com/open-duelyst/duelyst/issues/4)).
 
-## Setting up a Development Environment <a id="dev-environment" />
+我们还应该考虑尽可能转向 TypeScript。
+存储库中有一个相当严格的`tsconfig.json`，它已针对新代码进行了预先配置。 编写新的 TypeScript 代码后，您可以运行 `yarn tsc` 使用此配置来构建它。
 
-#### Installing System Dependencies
+## 搭建开发环境 <a id="dev-environment" />
 
-Before you get started, you'll need Node.js and
-[Docker Desktop](https://www.docker.com/products/docker-desktop/)
-These will enable you to run the code in containers, and to interact with the
-JavaScript build process.
+#### 安装系统依赖项
 
-We recommend installing Node.js by using [Volta](https://volta.sh/), which
-helps manage Node.js versions for you. We use the latest LTS release of Node,
-which is currently v18.
+在开始之前，您需要 Node.js 和 [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+这些将使您能够在容器中运行代码，并与 javaScript 构建过程进行交互。
 
-Once you have `npm`, you can use it to install Yarn (the package manager we
-use):
+我们建议使用以下方式安装 Node.js [Volta](https://volta.sh/), 它可以帮助您管理 Node.js 版本。 我们使用 Node 的最新 LTS 版本，目前是 v18。
+
+一旦你有了`npm`，你就可以用它来安装 Yarn（我们使用的包管理器）：
 
 ```bash
 npm install -g yarn@1
 npm install -g cross-env
 ```
 
-Before proceeding, disable the deprecated `git://` protocol for fetching
-packages:
+在继续之前，请禁用已弃用的“git://”协议来获取包：
 ```
 git config --global url."https://".insteadOf git://
 ```
 
-#### Installing Node.js Dependencies
+#### 安装 Node.js 依赖项
 
-Once you have Yarn installed, you can install the dependencies for the game.
-Run the following in the repository root directory:
+安装 Yarn 后，您可以安装游戏的依赖项。 在存储库根目录中运行以下命令：
 
 ```bash
 yarn install --dev  # Install remaining Node.js dependencies.
 yarn tsc:chroma-js  # Compile TypeScript dependencies.
 ```
 
-#### Setting up Firebase
+#### 设置 Firebase
 
-In order to successfully run the game, you will need a
+为了成功运行游戏，您需要
 [Firebase Realtime Database](https://firebase.google.com/docs/database/).
 
-Fortunately, Google provides a free version of this service called the
+幸运的是，Google 提供了该服务的免费版本，称为
 ["Spark Pricing Plan"](https://firebase.google.com/docs/projects/billing/firebase-pricing-plans).
 
-Create a Firebase (Google) account, a Firebase project, and a Firebase Realtime
-Database. Be sure to create the Realtime Database in the US Central region, as
-the Europe and Singapore regions will give you a URL which is incompatible with
-our Firebase client.
+创建 Firebase (Google) 帐户、Firebase 项目和 Firebase 实时数据库。 请务必在美国中部地区创建实时数据库，因为欧洲和新加坡地区将为您提供与我们的 Firebase 客户端不兼容的 URL。
 
-Once you have created a Firebase account and a Realtime Database, take note of
-your Realtime Database's URL, as you'll need it when building the code. You
-will also want to configure the Security Rules for your database. You can copy
-these from [firebaseRules.json](../firebaseRules.json) in the repo.
+创建 Firebase 帐户和实时数据库后，记下实时数据库的 URL，因为您在构建代码时需要它。 您还需要为数据库配置安全规则。 您可以从以下位置复制这些内容 [firebaseRules.json](../firebaseRules.json) 在仓库中。
 
-#### Building the Code
+#### 构建代码
 
-Now that dependencies are installed, you can build the game code and its
-assets. This step will take a few minutes.
+现在依赖项已安装，您可以构建游戏代码及其资产。 此步骤将需要几分钟。
 
 ```
 cross-env FIREBASE_URL=<YOUR_FIREBASE_URL> yarn build
 ```
 
-Including the Firebase URL is important, since it enables the game client to
-communicate with the servers. There's a link button on the front page of the
-realtime database you can press to copy the correct URL; don't copy and paste
-the address. We want the URl provided on the front page; it should look something
-like 'https://[name_of_database]-default-rtdb.firebaseio.com/".
+包含 Firebase URL 很重要，因为它使游戏客户端能够与服务器进行通信。 实时数据库首页有一个链接按钮，可以点击复制正确的URL； 不要复制并粘贴地址。 我们希望在首页上提供 URl； 它应该看起来像'https://[name_of_database]-default-rtdb.firebaseio.com/".
 
-After the initial build, you can save time with `yarn build:app` (code only; no
-assets) or `yarn build:web` (frontend HTML/CSS/JS only).
+初始构建后，您可以使用`yarn build:app`（仅代码；无资产）`yarn build:web`（仅限前端 HTML/CSS/JS）来节省时间。
 
-## Starting the Game Locally <a id="starting-the-game" />
+## 本地启动游戏 <a id="starting-the-game" />
 
-#### Additional Firebase Configuration
+#### 附加 Firebase 配置
 
-Now that you have a development environment set up, there's a bit more Firebase
-configuration needed. From your Firebase project settings page, click the
-"Service Accounts" tab.
+现在您已经设置了开发环境，还需要更多的 Firebase 配置。 在 Firebase 项目设置页面中，点击“服务帐户”选项卡。
 
-First, click "Database Secrets" and create a new legacy token.
-Create a file named `.env` in the repo root with the following contents:
+首先，单击“Database Secrets”并创建一个新的旧令牌。
+在存储库根目录中创建一个名为“.env”的文件，其中包含以下内容：
 
 ```bash
 FIREBASE_URL=<YOUR_FIREBASE_URL>
 FIREBASE_LEGACY_TOKEN=<YOUR_FIREBASE_LEGACY_TOKEN>
 ```
 
-Next, still on the Firebase "Service Accounts" page, click on the Service
-Accounts popout to open Google Cloud. Create a new service account with the
-ability to read from and write to Firebase. You can achieve this by using the
-"Firebase Realtime Database Admin" role, but you may want to restrict this
-later.
+接下来，仍然在 Firebase“服务帐户”页面上，单击“服务帐户”弹出窗口以打开 Google Cloud。 创建一个能够读取和写入 Firebase 的新服务帐户。 您可以通过使用“Firebase 实时数据库管理员”角色来实现此目的，但您可能希望稍后对此进行限制。
 
-On the Google "Service Accounts" page, clicking "Manage Keys" next to the
-newly-created service account will let you create a new JSON key. Do this, and
-save it as `serviceAccountKey.json` in the repo root.
+在 Google“服务帐户”页面上，单击新创建的服务帐户旁边的“管理密钥”将允许您创建新的 JSON 密钥。 执行此操作，并将其保存为存储库根目录中的`serviceAccountKey.json`
 
-Note: Both `.env` and `serviceAccountKey.json` are ignored by Git for this repo,
-so these secrets can't be accidentally committed.
+注意：此存储库的 Git 会忽略`.env`和`serviceAccountKey.json`，因此不会意外提交这些机密。
 
-#### Enabling the Cosmetics Shop
+#### 启用商城
 
-If you would like to enable the shop, set the value of
-`/system-status/shop_enabled` in Firebase to `true`. Once this is done, the shop
-will appear in the main menu.
+如果您想启用商店，请设置值
+`/system-status/shop_enabled` 在 Firebase 中设置为`true`。 完成此操作后，商店将出现在主菜单中。
 
-#### Starting with Docker
+#### 从 Docker 开始
 
-Now that the game has been built and Firebase has been configured, you can
-start the servers locally and play a game. We use
-[Docker Compose](https://docs.docker.com/compose/) to manage containers for the
-game servers, Redis cache, and Postgres database.
+现在游戏已经构建完毕，Firebase 也已配置，您可以在本地启动服务器并玩游戏了。 我们用
+[Docker Compose](https://docs.docker.com/compose/) 管理游戏服务器、Redis 缓存和 Postgres 数据库的容器。
 
-As a final step before starting the game servers, the Postgres database must be
-initialized. To do this, run `docker compose up migrate`.
+作为启动游戏服务器之前的最后一步，必须初始化 Postgres 数据库。 为此，请运行`docker compose up migrate`。
 
-Now you can run `docker compose up` to start the game servers and their
-dependencies.
+现在您可以运行`docker compose up`来启动游戏服务器及其依赖项。
 
-Once you see `Duelyst 'development' started on port 3000` in the logs, the
-server is ready! Open http://localhost:3000/ in a browser to load the client,
-create a user, and play a practice game.
+一旦您在日志中看到`Duelyst 'development' started on port 3000`，服务器就准备好了！ 在浏览器中打开http://localhost:3000/ 加载客户端，创建用户并玩练习游戏。
 
-## Common Troubleshooting Steps <a id="troubleshooting" />
+## 常见故障排除步骤 <a id="troubleshooting" />
 
-After you load Duelyst in your browser, there are two key places to monitor:
+在浏览器中加载 Duelyst 后，有两个关键位置需要监控：
 
-1. The browser console, which will relay all errors generated by the app.
-Filtering this to only the `warning` and `error` log levels will make things
-more readable.
+1. 浏览器控制台，它将转发应用程序生成的所有错误。将其过滤为仅`警告`和`错误`日志级别将使内容更具可读性。
 
-2. The console output of Docker Compose, which will multiplex log output from
-all of the game containers. Keep an eye out in particular for any error stack
-traces, which will be hard to miss since they span several lines and break from
-the typical log format.
+2. Docker Compose 的控制台输出，它将多路复用所有游戏容器的日志输出。 特别要注意任何错误堆栈跟踪，这些跟踪很难错过，因为它们跨越多行并打破了典型的日志格式。
 
-Errors from both of these sources should give you both a file and line number
-to reference. If not, you can generally search for the error string to find out
-where the error is originating in the code. Some errors originate from our
-dependencies, so you can also search for error strings in the `node_modules/`
-directory if you're having trouble tracking something down.
+来自这两个来源的错误应该为您提供可供参考的文件和行号。 如果没有，您通常可以搜索错误字符串以找出代码中错误的根源。 有些错误源自我们的依赖项，因此如果您在跟踪某些内容时遇到困难，还可以在`node_modules/`目录中搜索错误字符串。
 
-## Making App (Frontend) Changes <a id="frontend-changes" />
+## 进行应用程序（前端）更改 <a id="frontend-changes" />
 
-Now that you have the full development environment set up, you can try making
-changes to the game client. To do this, edit any code, cards, or resources
-desired in the `app/` directory.
+现在您已经设置了完整的开发环境，您可以尝试对游戏客户端进行更改。 为此，请编辑`app/`目录中所需的任何代码、卡片或资源。
+完成后，再次构建游戏：
 
-When finished, build the game once more:
 ```
 FIREBASE_URL=<YOUR_FIREBASE_URL> yarn build
 ```
 
-You can now run `docker compose up` again and load the client to test your
-changes.
+您现在可以再次运行`docker compose up`并加载客户端来测试您的更改。
 
-## Making Server/Worker (Backend) Changes <a id="backend-changes" />
+## 进行服务器/工作线程（后端）更改 <a id="backend-changes" />
 
-When working on the Server or Worker code, you don't need to rebuild the game.
-Instead, simply run `docker compose up` again, and load the game client to test
-your changes.
+在处理服务器或工作线程代码时，您不需要重建游戏。 相反，只需再次运行`docker compose up`，然后加载游戏客户端来测试您的更改。
 
-Don't forget to run unit tests with `yarn test:unit`, and integration tests
-with `yarn test:integration`. If you notice a failing test for code you haven't
-changed, please file a new `bug` issue.
+不要忘记使用 `yarn test:unit` 运行单元测试，并使用 `yarn test:integration` 运行集成测试。 如果您发现未更改的代码测试失败，请提交新的`bug`问题。
 
-## Opening Pull Requests <a id="pull-requests" />
+## 打开拉取请求 <a id="pull-requests" />
 
-Once you have a contribution ready, you can open a pull request to get it
-reviewed.
+准备好贡献后，您可以打开拉取请求以对其进行审核。
 
-First, fork OpenDuelyst on Github, and push your branch to the fork. Then, when
-signed into Github, you'll be prompted to open a pull request when viewing the
-OpenDuelyst repo.
+首先，在 Github 上分叉 OpenDuelyst，并将您的分支推送到分叉。 然后，登录 Github 后，系统会在查看 OpenDuelyst 存储库时提示您打开拉取请求。
 
-If the contribution solves an open issue, you can automatically close that
-issue when the PR is merged. To do this, include the text "Closes #1234" in the
-PR description (to automatically close issue #1234).
+如果贡献解决了一个未解决的问题，您可以在合并 PR 时自动关闭该问题。 为此，请在 PR 描述中包含文本“关闭 #1234”（以自动关闭问题 #1234）。
 
-When you open a pull request, some tasks will automatically start in our
-Continuous Integration (CI) environment to lint and test the code.
+当您打开拉取请求时，一些任务将在我们的持续集成 (CI) 环境中自动启动，以检查和测试代码。
 
-We use [Github Actions](https://github.com/features/actions) for CI, so you can
-see the atatus and results of these tasks right in the pull request itself.
+我们使用 [Github Actions](https://github.com/features/actions) 进行ci, 因此您可以在拉取请求本身中看到这些任务的状态和结果。
 
-Once the PR has been reviewed and accepted, it will be merged into the `main`
-branch. At this point, you are now an OpenDuelyst developer. Congratulations!
+一旦 PR 被审核并接受，它将被合并到`main`分支中。 至此，您已经是一名 OpenDuelyst 开发人员了。 恭喜！
 
-## Versioning <a id="versioning" />
+## 版本 <a id="versioning" />
 
-OpenDuelyst uses [Semantic Versioning](https://semver.org/) for its releases.
-In version `1.96.17`, `1` is the `MAJOR` version, `96` is the `MINOR` version,
-and `17` is the `PATCH` version.
+OpenDuelyst 使用 [Semantic Versioning](https://semver.org/) 其发布.
+在版本`1.96.17`中，`1`是`MAJOR`版本，`96`是`MINOR`版本，`17`是`PATCH`版本。
 
-For OpenDuelyst, the `MAJOR` version should not exceed `1`. Note that the
-immediate release after `1.99` is `1.100` and not `2.0.0`.
+对于 OpenDuelyst，`MAJOR`版本不应超过`1`。 请注意，`1.99`之后的立即版本是`1.100`，而不是`2.0.0`。
 
-## Where to Get Help <a id="get-help" />
+## 从哪里获得帮助 <a id="get-help" />
 
-At the moment, you can get help with OpenDuelyst by opening an issue.
-Since this is a volunteer project, it may take a few days for someone to look
-at your issue.
+目前，您可以通过提出问题来获得有关 OpenDuelyst 的帮助。 由于这是一个志愿者项目，因此可能需要几天时间才会有人查看您的问题。
 
-You can also join the [OpenDuelyst Discord server](https://discord.gg/HhUWfZ9cxe)
-for technical discussion and support.
+您还可以加入 [OpenDuelyst Discord server](https://discord.gg/HhUWfZ9cxe)
+进行技术讨论和支持。

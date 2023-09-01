@@ -1,145 +1,109 @@
 # Duelyst Service Architecture
 
-<img src="diagrams/services.png" alt="Service Architecture Diagram" width=600 />
+![Service Architecture Diagram](diagrams/services.png)
 
-## Client Architecture
+## 客户端架构
 
-The game client is a Backbone.js + Marionette application which runs in the
-browser. Code can be found in `app/`, and configuration can be found in
-`app/common/config.js`.
+游戏客户端是一个在浏览器中运行的 Backbone.js + Marionette 应用程序。 代码可以在`app/`中找到，配置可以在`app/common/config.js`中找到。
 
-The game engine to render the client in HTML is [Cocos2d-JS (vs 3.3)](https://docs.cocos.com/cocos2d-x/manual/en/)
+以 HTML 形式渲染客户端的游戏引擎是 [Cocos2d-JS (vs 3.3)](https://docs.cocos.com/cocos2d-x/manual/en/)
 
-## Server Architecture
+## 服务器架构
 
-Duelyst's backend primarily consists of four CoffeeScript services:
+Duelyst 的后端主要由四个 CoffeeScript 服务组成：
 
 API Server:
 
-- The API server is an Express.js app which handles routes for game clients.
-- The service stores user and game data in Postgres and Redis.
-- The service listens on port 3000 by default, and it serves the browser client
-	on the default route.
-- Code can be found in `server/api.coffee`, and configuration can be found in
-	`config/`.
+- API 服务器是一个 Express.js 应用程序，用于处理游戏客户端的路由。
+- 该服务将用户和游戏数据存储在 Postgres 和 Redis 中。
+- 该服务默认侦听端口 3000，并在默认路由上为浏览器客户端提供服务。
+- 代码可以在`server/api.coffee`中找到，配置可以在`config/`中找到。
 
 Game Server:
 
-- The Game server is a Socket.io WebSocket server which handles multiplayer
-	games.
-- The service enqueues tasks in Redis to be picked up by the workers.
-- The service listens on port 8001 by default.
-- Code can be found in `server/game.coffee`, and configuration can be found in
-	`config/`.
+- 游戏服务器是一个处理多人游戏的 Socket.io WebSocket 服务器。
+- 该服务将任务放入 Redis 中以供workers拾取。
+- 该服务默认侦听端口 8001。
+- 代码可以在`server/game.coffee`中找到，配置可以在`config/`中找到.
 
 Single Player (SP) Server:
 
-- The SP server is a Socket.io WebSocket server which handles single-player
-	games.
-- The service enqueues tasks in Redis to be picked up by the workers.
-- The service listens on port 8000 by default.
-- Code can be found in `server/single_player.coffee`, and configuration can be
-	found in `config/`.
+- SP 服务器是一个处理单人游戏的 Socket.io WebSocket 服务器。
+- 该服务将任务放入 Redis 中以供workers拾取。
+- 该服务默认侦听端口 8000。
+- 代码可以在`server/single_player.coffee`中找到，配置可以在`config/`中找到.
 
 Worker:
 
-- The worker uses Kue to poll Redis-backed queues for tasks like game creation
-	and matchmaking.
-- Some matchmaking tasks also use Postgres, for server healthchecks and
-	retrieving bot users.
-- Code can be found in `worker/worker.coffee`, and configuration can be found
-	in `config/`.
-- A Kue GUI is available at `http://localhost:4000` via
-	`docker compose up worker-ui`).
+- Worker使用 Kue 轮询 Redis 支持的队列以执行游戏创建和匹配等任务.
+- 一些匹配任务还使用 Postgres 来进行服务器运行状况检查和检索机器人用户。
+- 代码可以在`worker/worker.coffee`中找到，配置可以在`config/`中找到。
+- Kue GUI 可通过`docker compose upworker-ui`在`http://localhost:4000`获得。
 
-## Other Dependencies
+## 其他依赖项
 
-Firebase Realtime Database:
+Firebase 实时数据库：
 
-- Provides a way to the game client to access both permanent and transient
-	data, without direct access to Postgres, such as transmitting game steps.
-- Client code can be found in `app` (see `new Firebase()` calls) and
-	`server/lib/duelyst_firebase_module.coffee`, and configuration can be found
-	in `config/`
+- 为游戏客户端提供一种访问永久和瞬态数据的方法，而无需直接访问Postgres，例如传输游戏步骤。
+- 客户端代码可以在`app`（参见`new Firebase()`调用）和`server/lib/duelyst_firebase_module.coffee`中找到，配置可以在`config/`中找到
 
 Postgres:
 
-- Stores relational data for users, completed games, database migrations, and
-	more
-- Client code can be found in `server/lib/data_access/knex.coffee` and
-	`server/knexfile.js`, and configuration can be found in `config/`
-- Migrations can be run via `docker compose up migrate`
-- An admin UI is available at `http://localhost:8080` via
-	`docker compose up adminer`
+- 存储用户、已完成的游戏、数据库迁移等的关系数据
+- 客户端代码可以在`server/lib/data_access/knex.coffee`和`server/knexfile.js`中找到，配置可以在`config/`中找到
+- 可以通过`docker compose up migrate`运行迁移
+- 可以通过`docker compose up adminer`在`http://localhost:8080`获取管理 UI
 
 Redis:
 
-- Used as a backing queue for Kue tasks, as well as for matchmaking, game
-	management, player queues, and more
-- Client code can be found in `server/redis/index.coffee`, and configuration
-	can be found in `config/`
+- 用作 Kue 任务的后备队列，以及匹配、游戏管理、玩家队列等
+- 客户端代码可以在`server/redis/index.coffee`中找到，配置可以在`config/`中找到
 
 Consul:
 
-- Not required in single-server deployments, but was historically used for
-	service discovery, matchmaking, and spectating
-- Client code can be found in `server/lib/consul.coffee`, and configuration can
-	be found in `config/`
+- 单服务器部署中不需要，但历史上用于服务发现、匹配和观察
+- 客户端代码可以在`server/lib/consul.coffee`中找到，配置可以在`config/`中找到
 
 AWS S3:
 
-- Provides binary large object (blob) storage for generic file storage.
-- Not currently used, but code is available to use S3 for CDN, unfinished game
-	archiving, client logging, and database backup features.
+- 为通用文件存储提供二进制大对象 (blob) 存储。
+- 目前未使用，但代码可用于使用 S3 进行 CDN、未完成的游戏存档、客户端日志记录和数据库备份功能。
 
-## Resource Utilization <a id="resource-utilization" />
+## 资源利用率 <a id="resource-utilization" />
 
-The following resource utilization numbers were measured by Docker locally. The
-baseline numbers were measured when idle, and the peak and per-game numbers
-were measured when playing a practice game (which performs the same work as the
-Game WebSocket server, plus computational work for AI decisions).
+以下资源利用率数据是由 Docker 在本地测量的。 基线数据是在闲置时测量的，峰值和每场游戏的数据是在玩练习游戏时测量的（其执行与 Game WebSocket 服务器相同的工作，加上 AI 决策的计算工作）。
 
 #### Node.js processes (API, Game, SP, Worker):
 
-- CPU: 0-1% baseline; API spikes to 15-65% on loads; SP spikes to 5% on AI
-	processing.
-  - NOTE: The API spikes during loads are largely due to serving 75MB of static
-		assets from Express instead of CDN.
-- Memory: 300MB baseline. API increases to ~500MB over time.
-- Network: Near-zero baseline.
-	- API sends about 500KB per game.
-	- Game and SP send about 200KB per game.
-	- Worker's baseline is 1-2KB/s (internal, unbilled traffic).
-		- This ongoing traffic is due to Kue polling; see
-			`server/redis/r-jobs.coffee`.
-- Storage: About 5GB (2.0GB for OS baseline, 1.3GB for `app/`, 0.8GB for
-	`node_modules/`, 0.5GB for `dist/`)
+- CPU：0-1% 基线； API 负载峰值达到 15-65%； AI 处理后 SP 飙升至 5%。
+  - 注意：负载期间的 API 峰值主要是由于从 Express 而不是 CDN 提供 75MB 的静态资源。
+- 内存：300MB 基线。 随着时间的推移，API 会增加到约 500MB。
+- 网络：接近零基线。
+	- API 每个游戏发送约 500KB。
+	- 每场游戏和 SP 发送约 200KB。
+	- Worker 的基线是 1-2KB/s（内部、未计费流量）。
+		- 这种持续的流量是由于 Kue 轮询造成的； 请参阅`server/redis/r-jobs.coffee`.
+- 存储：约5GB（2.0GB用于操作系统基线，1.3GB用于`app/`，0.8GB用于`node_modules/`，0.5GB用于`dist/`）
 
 #### Postgres database:
 
-- CPU: Near-zero baseline. Reaches 7% on user retrieval (login etc.)
-- Memory: 20MB baseline. Increases to 70MB after logging in and playing games
-	(caching)
-- Network: Near-zero baseline. Sends 10-15KB (internal, unbilled traffic) on
-	user operations (fetching users, challenges, cards, etc.)
-- Storage: About 1GB (0.5GB for OS baseline, 0.1GB for `/var/lib/postgresql`
-	with ~5 users, ~20 games)
+- CPU：接近零基线。 用户检索（登录等）达到 7%
+- 内存：20MB 基线。 登录并玩游戏后增加至 70MB（缓存）
+- 网络：接近零基线。 发送有关用户操作（获取用户、挑战、卡片等）的 10-15KB（内部、未计费流量）
+- 存储：约 1GB（0.5GB 用于操作系统基准，0.1GB 用于`/var/lib/postgresql`，约 5 个用户，约 20 个游戏）
 
 #### Redis cache:
 
-- CPU: 1% baseline. Stays under 2% during games.
-	- Redis 6.x has a second thread for connection handling, but we don't benefit
-		much from this at our small scale.
-- Memory: 4MB baseline; under 5MB when playing local single player.
-- Network: 1KB/s baseline. Sends under 1MB per game (internal, unbilled
-	traffic).
-	- This ongoing traffic is due to Kue polling; see
-		`server/redis/r-jobs.coffee`.
-- Storage: Under 200MB.
+- CPU：1% 基线。 游戏期间保持在 2% 以下。
+	- Redis 6.x 有第二个线程用于连接处理，但在我们的小规模下，我们并没有从中受益匪浅。
+- 内存：4MB 基线； 玩本地单人游戏时小于 5MB。
+- 网络：1KB/s 基线。 每个游戏的发送量低于 1MB（内部、未计费流量）。
+	- 这种持续的流量是由于 Kue 轮询造成的； 请参阅 `server/redis/r-jobs.coffee`。
+- 存储：200MB 以下。
 
-#### Total resources used for 250 concurrent, 10-minute games (125 MP, 125 SP):
+#### 250 个并发、10 分钟游戏使用的总资源（125 MP、125 SP）:
 
-- vCPU: About 10 (Half of this is API and Worker)
-- Memory: About 2GB (though more will improve buffer/cache efficiency)
-- Network: About 300 KB/s overall; 175MB total for 250 games (700KB per game)
-- Storage: About 22GB with each service on a different instance.
+- vCPU：大约10个（其中一半是API和Worker）
+- 内存：大约 2GB（尽管更多会提高缓冲区/缓存效率）
+- 网络：总体约300 KB/s； 250 款游戏总计 175MB（每款游戏 700KB）
+- 存储：每个服务位于不同实例上大约 22GB。

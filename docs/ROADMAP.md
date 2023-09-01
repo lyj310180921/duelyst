@@ -1,46 +1,28 @@
-# OpenDuelyst Roadmap
+# OpenDuelyst 路线图
 
-## Project Goals
+## 项目目标
 
-- OpenDuelyst will be free indefinitely, with no form of monetization. The code
-	supporting payment processing has already been disabled or removed.
-- We aim to preserve the original game experience of building a collection
-	while greatly accelerating card acquisition. As a result, all users receive
-	2,500 Gold and 50,000 Spirit after logging in, which gives plenty of
-	resources to start building decks. The costs of purchasing Orbs (packs) and
-	crafting cards has been reduced by 50%, and quest rewards have been tripled.
-- Creating new content or making balance changes are not goals of this project.
-	Instead, we aim to provide a well-maintained reference implementation and
-	reference deployment of the game as it existed before the shutdown in 2020.
-- We will build clients for web (including mobile web) and desktop.
-- We would like to provide native mod support for modified art, game rules,
-	cards, etc., enabling users to tweak the existing codebase without needing
-	to fork and heavily modify the project.
+- OpenDuelyst 将无限期免费，没有任何形式的货币化。 支持付款处理的代码已被禁用或删除。
+- 我们的目标是保留构建收藏的原始游戏体验，同时大大加快卡牌获取速度。 因此，所有用户在登录后都会收到 2,500 金币和 50,000 精神，这为开始构建套牌提供了充足的资源。 购买球体（包）和制作卡的成本降低了 50%，任务奖励增加了两倍。
+- 创建新内容或进行平衡更改不是该项目的目标。 相反，我们的目标是提供一个维护良好的参考实现和参考部署，就像 2020 年关闭之前一样。
+- 我们将构建网络（包括移动网络）和桌面客户端。
+- 我们希望为修改后的美术、游戏规则、卡牌等提供原生 mod 支持，使用户能够调整现有的代码库，而无需分叉和大量修改项目。
 
-## Project Timeline
+## 项目时间线
 
-As of October 2022, most of the highest-priority issues, such as making the
-game functional, building clients for our target platforms, and creating
-automation and documentation for the project, are already complete.
+截至 2022 年 10 月，大多数最优先的问题（例如使游戏功能化、为我们的目标平台构建客户端以及为项目创建自动化和文档）已经完成。
 
-We are currently focused on contributor onboarding. Issues are tagged as
-`frontend`, `backend`, or `infrastructure` to make it easier to find work which
-matches contributors' interests and experience. Contributors can work on any
-issue, but we have some rough prioritization assigned to issues:
+截至 2022 年 10 月，大多数优先级最高的问题（例如游戏功能、构建）目前都集中在贡献者入职上。 问题被标记为`前端`、`后端`或`基础设施`，以便更轻松地找到符合贡献者兴趣和经验的工作。 贡献者可以解决任何问题，但我们对问题分配了一些粗略的优先级：我们的目标平台的客户端以及为项目创建自动化和文档已经完成。
 
-- P0 issues involve major end-user impact, such as broken or missing features.
-- P1 issues involve major developer impact, such as automating deployments.
-- P2 issues involve minor end-user impact, such as visual or text bugs.
-- P3 issues involve minor developer impact, such as code cleanup.
+- P0 问题涉及对最终用户的重大影响，例如功能损坏或缺失。
+- P1 问题涉及对开发人员的主要影响，例如自动化部署。
+- P2 问题涉及对最终用户的轻微影响，例如视觉或文本错误。
+- P3 问题涉及较小的开发人员影响，例如代码清理。
 
-For November 2022 and beyond, we have a few high-priority objectives:
+对于 2022 年 11 月及以后，我们有一些高度优先的目标：
+- 更好的移动支持，包括打包 Android 和 iOS 应用程序以及 UI 缩放的改进
+- 创造新的成就和任务
+- 创造新的日常挑战和谜题
+- 实施密码重置流程（使用令牌而不是电子邮件）
 
-- Better mobile support, including packaging Android and iOS apps and
-	improvements to UI scaling
-- Creating new achievements and quests
-- Creating new daily challenges and puzzles
-- Implementing a password reset flow (using tokens rather than email)
-
-At some point, we plan to provision a production environment in AWS for a more
-"official" launch of the game. In the meantime, we are using the staging
-environment as a publicly-available deployment for web and desktop clients.
+在某个时候，我们计划在 AWS 中配置生产环境，以便更“正式”地发布游戏。 与此同时，我们使用临时环境作为 Web 和桌面客户端的公开部署。

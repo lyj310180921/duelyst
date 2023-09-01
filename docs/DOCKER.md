@@ -1,32 +1,30 @@
-# Building and Testing Docker Images
+# 构建和测试 Docker 镜像
 
-Dockerfiles and scripts for starting and managing our containers are located in
-the `docker/` directory.
+用于启动和管理容器的 Dockerfile ,脚本位于`docker/`目录中。
 
-## Local Development
+## 本地开发
 
-Use `docker compose up`, which will use the `docker/start.sh` script to run
-Yarn scripts.
+使用`docker compose up`，它将使用`docker/start.sh`脚本来运行 Yarn 脚本。
 
-## Testing Container Builds
+## 测试容器构建
 
-Build a container image:
+构建容器镜像：
 ```
 # <service> should be one of ('api', 'game', 'sp', 'worker')
 # <version> should match the latest git release; defaults to 'testing'
 scripts/build_container.sh <service> <version>
 ```
 
-Test a container image:
+测试容器镜像：
 ```
 # This should successfully start the SP server.
 # Ctrl-C should successfully terminate the container.
 docker run -it duelyst-sp
 ```
 
-## Publishing Containers to ECR
+## 将容器发布到 ECR
 
-Tag and publish a container image:
+标记并发布容器镜像：
 ```
 # <service> should be one of ('api', 'game', 'sp', 'worker')
 # <version> should match the latest git release
@@ -35,15 +33,15 @@ Tag and publish a container image:
 scripts/publish_container.sh <service> <version> <registry> <repo>
 ```
 
-## Notes on Image Sizes
+## 关于镜像尺寸的注意事项
 
-There are a few strategies we use to keep image sizes small:
+我们使用一些策略来保持较小的镜像尺寸：
 
-1. Use an alternative base image, i.e. `node:18-slim` instead of `node:18`
-2. Avoid installing Node.js `devDependencies` in container builds
-3. Purge the Yarn cache from container builds
+1. 使用替代基本映像，即`node:18-slim`而不是`node:18`
+2. 避免在容器构建中安装 Node.js `devDependency`
+3. 从容器构建中清除 Yarn 缓存
 
-#### Comparison of Base Images
+#### 基础镜像对比
 
 Sizes of Docker images built by `scripts/build_container.sh`:
 
