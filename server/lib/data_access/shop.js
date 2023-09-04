@@ -1,438 +1,519 @@
-Promise = require 'bluebird'
-util = require 'util'
-moment = require 'moment'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS202: Simplify dynamic range loops
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Promise = require('bluebird');
+const util = require('util');
+const moment = require('moment');
+const _ = require('underscore');
 
-FirebasePromises = require '../firebase_promises'
-DuelystFirebase = require '../duelyst_firebase_module'
-Logger = require '../../../app/common/logger.coffee'
-Errors = require '../custom_errors'
-knex = require("../data_access/knex")
-generatePushId = require '../../../app/common/generate_push_id'
-{Jobs} = require '../../redis/'
-ShopData = require 'app/data/shop.json'
-CosmeticsFactory = require 'app/sdk/cosmetics/cosmeticsFactory'
-CosmeticsTypeLookup = require 'app/sdk/cosmetics/cosmeticsTypeLookup'
-InventoryModule = require './inventory'
-UsersModule = require './users'
-CosmeticChestsModule = require './cosmetic_chests'
-SyncModule = require './sync'
-RiftModule = require './rift'
-GiftCrateModule = require './gift_crate'
+const FirebasePromises = require('../firebase_promises');
+const DuelystFirebase = require('../duelyst_firebase_module');
+const Logger = require('../../../app/common/logger.coffee');
+const Errors = require('../custom_errors');
+const knex = require("../data_access/knex");
+const generatePushId = require('../../../app/common/generate_push_id');
+const {Jobs} = require('../../redis/');
+const ShopData = require('app/data/shop.json');
+const CosmeticsFactory = require('app/sdk/cosmetics/cosmeticsFactory');
+const CosmeticsTypeLookup = require('app/sdk/cosmetics/cosmeticsTypeLookup');
+const InventoryModule = require('./inventory');
+const UsersModule = require('./users');
+const CosmeticChestsModule = require('./cosmetic_chests');
+const SyncModule = require('./sync');
+const RiftModule = require('./rift');
+const GiftCrateModule = require('./gift_crate');
 
-class ShopModule
-  @SHOP_SALE_BUFFER_MINUTES: 5 # Number of minutes passed a shop sale's expiration we will allow the purchase to work
+class ShopModule {
+  static initClass() {
+    this.SHOP_SALE_BUFFER_MINUTES = 5;
+     // Number of minutes passed a shop sale's expiration we will allow the purchase to work
+  }
 
-  @_addChargeToUser: (txPromise,tx,userRow,userId,sku,price,currencyCode,chargeId,chargeJson,paymentType,createdAt) ->
-    allPromises = []
+  static _addChargeToUser(txPromise,tx,userRow,userId,sku,price,currencyCode,chargeId,chargeJson,paymentType,createdAt) {
+    let allPromises = [];
 
-    updateParams =
-      ltv:          userRow.ltv + price
-      purchase_count:      userRow.purchase_count + 1
+    const updateParams = {
+      ltv:          userRow.ltv + price,
+      purchase_count:      userRow.purchase_count + 1,
       last_purchase_at:    createdAt.toDate()
+    };
 
-    if not userRow.first_purchased_at
-      updateParams.first_purchased_at = createdAt.toDate()
-
-    allPromises.push tx("users").where('id',userId).update(updateParams)
-
-    allPromises.push tx("user_charges").insert(
-      charge_id:    chargeId
-      user_id:      userId
-      payment_type:  paymentType
-      created_at:    createdAt.toDate()
-      amount:        price
-      currency:      currencyCode
-      charge_json:  chargeJson
-      sku:           sku
-    )
-
-    totalPlatinumAmount = chargeJson?.total_platinum_amount
-    if totalPlatinumAmount?
-      allPromises.push tx("user_currency_log").insert(
-        id:                generatePushId()
-        user_id:          userId
-        premium_currency:  totalPlatinumAmount
-        sku:               sku
-        memo:              "premium currency purchase"
-        created_at:        createdAt.toDate()
-      )
-
-    # This is specifically for trimmed data we deem acceptable for a player to see
-    fbReceiptData = {
-      created_at:        createdAt.valueOf()
-      sku:              sku
-      price:            price
+    if (!userRow.first_purchased_at) {
+      updateParams.first_purchased_at = createdAt.toDate();
     }
-    if chargeJson?
-      if chargeJson.total_platinum_amount?
-        fbReceiptData.total_platinum_amount = chargeJson.total_platinum_amount
-      if chargeJson.transaction_id?
-        fbReceiptData.transaction_id = chargeJson.transaction_id
-      if chargeJson.type?
-        fbReceiptData.type = chargeJson.type
+
+    allPromises.push(tx("users").where('id',userId).update(updateParams));
+
+    allPromises.push(tx("user_charges").insert({
+      charge_id:    chargeId,
+      user_id:      userId,
+      payment_type:  paymentType,
+      created_at:    createdAt.toDate(),
+      amount:        price,
+      currency:      currencyCode,
+      charge_json:  chargeJson,
+      sku
+    })
+    );
+
+    const totalPlatinumAmount = chargeJson != null ? chargeJson.total_platinum_amount : undefined;
+    if (totalPlatinumAmount != null) {
+      allPromises.push(tx("user_currency_log").insert({
+        id:                generatePushId(),
+        user_id:          userId,
+        premium_currency:  totalPlatinumAmount,
+        sku,
+        memo:              "premium currency purchase",
+        created_at:        createdAt.toDate()
+      })
+      );
+    }
+
+    // This is specifically for trimmed data we deem acceptable for a player to see
+    const fbReceiptData = {
+      created_at:        createdAt.valueOf(),
+      sku,
+      price
+    };
+    if (chargeJson != null) {
+      if (chargeJson.total_platinum_amount != null) {
+        fbReceiptData.total_platinum_amount = chargeJson.total_platinum_amount;
+      }
+      if (chargeJson.transaction_id != null) {
+        fbReceiptData.transaction_id = chargeJson.transaction_id;
+      }
+      if (chargeJson.type != null) {
+        fbReceiptData.type = chargeJson.type;
+      }
+    }
 
     txPromise
-    .then ()-> return DuelystFirebase.connect().getRootRef()
-    .then (rootRef)->
-      FirebasePromises.setWithPriority(rootRef.child("user-charges").child(userId).child(chargeId),chargeJson,createdAt.valueOf())
-      FirebasePromises.setWithPriority(rootRef.child("user-premium-receipts").child(userId).child(chargeId),fbReceiptData,createdAt.valueOf())
-      FirebasePromises.safeTransaction(rootRef.child("user-purchase-counts").child(userId).child(sku),(purchaseCountRecord)->
-        purchaseCountRecord ?= {}
-        purchaseCountRecord.count ?= 0
-        purchaseCountRecord.count += 1
-        return purchaseCountRecord
-      )
+    .then(() => DuelystFirebase.connect().getRootRef())
+    .then(function(rootRef){
+      FirebasePromises.setWithPriority(rootRef.child("user-charges").child(userId).child(chargeId),chargeJson,createdAt.valueOf());
+      FirebasePromises.setWithPriority(rootRef.child("user-premium-receipts").child(userId).child(chargeId),fbReceiptData,createdAt.valueOf());
+      return FirebasePromises.safeTransaction(rootRef.child("user-purchase-counts").child(userId).child(sku),function(purchaseCountRecord){
+        if (purchaseCountRecord == null) { purchaseCountRecord = {}; }
+        if (purchaseCountRecord.count == null) { purchaseCountRecord.count = 0; }
+        purchaseCountRecord.count += 1;
+        return purchaseCountRecord;
+      });
+    });
 
     return Promise.all(allPromises)
-      .then ()-> return DuelystFirebase.connect().getRootRef()
-      .then (rootRef)->
-        allPromises = []
-        updateUserLtv = (userData)->
-          if userData
-            userData.ltv ?= 0
-            userData.ltv += price
-          return userData
-        # save a reference of the charge to auth firebase
-        allPromises.push FirebasePromises.safeTransaction(rootRef.child("users").child(userId),updateUserLtv)
-        return Promise.all(allPromises)
+      .then(() => DuelystFirebase.connect().getRootRef())
+      .then(function(rootRef){
+        allPromises = [];
+        const updateUserLtv = function(userData){
+          if (userData) {
+            if (userData.ltv == null) { userData.ltv = 0; }
+            userData.ltv += price;
+          }
+          return userData;
+        };
+        // save a reference of the charge to auth firebase
+        allPromises.push(FirebasePromises.safeTransaction(rootRef.child("users").child(userId),updateUserLtv));
+        return Promise.all(allPromises);
+    });
+  }
 
-  ###*
-  # Updates a user's currency log and related fields with having made a purchase with premium currency
-  # @public
-  # @param  {String}  userId    User ID.
-  # @param  {Object}  userRow    User db data
-  # @param  {String}  sku        sku of product purchased
-  # @param  {int}  price          A positive integer in the smallest currency unit
-  # @param  {String}  shopSaleId    id of shop sale used or none
-  # @return  {Promise}
-  ###
-  @_addPremiumChargeToUser: (txPromise,tx,userId,userRow,sku,price,shopSaleId,systemTime) ->
-    allPromises = []
+  /**
+   * Updates a user's currency log and related fields with having made a purchase with premium currency
+   * @public
+   * @param  {String}  userId    User ID.
+   * @param  {Object}  userRow    User db data
+   * @param  {String}  sku        sku of product purchased
+   * @param  {int}  price          A positive integer in the smallest currency unit
+   * @param  {String}  shopSaleId    id of shop sale used or none
+   * @return  {Promise}
+   */
+  static _addPremiumChargeToUser(txPromise,tx,userId,userRow,sku,price,shopSaleId,systemTime) {
+    const allPromises = [];
 
-    NOW_UTC_MOMENT = systemTime || moment.utc()
+    const NOW_UTC_MOMENT = systemTime || moment.utc();
 
-    if sku == "STARTERBUNDLE_201604"
-      updateParams = {}
-      updateParams.has_purchased_starter_bundle = true
-      allPromises.push tx("users").where('id',userId).update(updateParams)
+    if (sku === "STARTERBUNDLE_201604") {
+      const updateParams = {};
+      updateParams.has_purchased_starter_bundle = true;
+      allPromises.push(tx("users").where('id',userId).update(updateParams));
+    }
 
-    allPromises.push tx("user_currency_log").insert(
-      id:                generatePushId()
-      user_id:            userId
-      premium_currency:  (price * -1)
-      sku:               sku
-      memo:              "premium shop purchase"
-      sale_id:            shopSaleId
+    allPromises.push(tx("user_currency_log").insert({
+      id:                generatePushId(),
+      user_id:            userId,
+      premium_currency:  (price * -1),
+      sku,
+      memo:              "premium shop purchase",
+      sale_id:            shopSaleId,
       created_at:            NOW_UTC_MOMENT.toDate()
-    )
+    })
+    );
 
-    if userRow.referred_by_user_id? and userRow.purchase_count == 0
-      # kick off a job to process this referral event
-      Jobs.create("process-user-referral-event",
-        name: "Process User Referral Event"
-        title: util.format("User %s :: Generated Referral Event %s", userRow.id, "purchase")
-        userId: userRow.id
-        eventType: "purchase"
+    if ((userRow.referred_by_user_id != null) && (userRow.purchase_count === 0)) {
+      // kick off a job to process this referral event
+      Jobs.create("process-user-referral-event", {
+        name: "Process User Referral Event",
+        title: util.format("User %s :: Generated Referral Event %s", userRow.id, "purchase"),
+        userId: userRow.id,
+        eventType: "purchase",
         referrerId: userRow.referred_by_user_id
-      ).removeOnComplete(true).ttl(15000).save()
+      }
+      ).removeOnComplete(true).ttl(15000).save();
+    }
 
     txPromise
-    .then ()-> return DuelystFirebase.connect().getRootRef()
-    .then (rootRef)->
-      FirebasePromises.safeTransaction(rootRef.child("user-purchase-counts").child(userId).child(sku),(purchaseCountRecord)->
-        purchaseCountRecord ?= {}
-        purchaseCountRecord.count ?= 0
-        purchaseCountRecord.count += 1
-        return purchaseCountRecord
-      )
-      if sku == "STARTERBUNDLE_201604"
-        FirebasePromises.set(rootRef.child("users").child(userId).child("has_purchased_starter_bundle"),true)
+    .then(() => DuelystFirebase.connect().getRootRef())
+    .then(function(rootRef){
+      FirebasePromises.safeTransaction(rootRef.child("user-purchase-counts").child(userId).child(sku),function(purchaseCountRecord){
+        if (purchaseCountRecord == null) { purchaseCountRecord = {}; }
+        if (purchaseCountRecord.count == null) { purchaseCountRecord.count = 0; }
+        purchaseCountRecord.count += 1;
+        return purchaseCountRecord;
+      });
+      if (sku === "STARTERBUNDLE_201604") {
+        return FirebasePromises.set(rootRef.child("users").child(userId).child("has_purchased_starter_bundle"),true);
+      }
+    });
 
     return Promise.all(allPromises)
-    .then ()->
-      # Send update to achievements job for armory purchase
-      Jobs.create("update-user-achievements",
-        name: "Update User Armory Achievements"
-        title: util.format("User %s :: Update Armory Achievements", userId)
-        userId: userId
-        armoryPurchaseSku: sku
-      ).removeOnComplete(true).save()
+    .then(() => // Send update to achievements job for armory purchase
+    Jobs.create("update-user-achievements", {
+      name: "Update User Armory Achievements",
+      title: util.format("User %s :: Update Armory Achievements", userId),
+      userId,
+      armoryPurchaseSku: sku
+    }
+    ).removeOnComplete(true).save());
+  }
 
-  ###*
-  # @public
-  # @param  {String}    userId          User ID.
-  # @param  {String}    sku            Product SKU.
-  # @param  {String|null}  shopSaleId        Sale Id to use for transaction or null if none used
-  # @return  {Promise}              Promise that will resolve when done.
-  ###
-  @purchaseProductWithPremiumCurrency: (userId,sku,shopSaleId)->
-    Logger.module("ShopModule").debug "purchaseProductWithPremiumCurrency() -> user #{userId} buying #{sku}"
+  /**
+   * @public
+   * @param  {String}    userId          User ID.
+   * @param  {String}    sku            Product SKU.
+   * @param  {String|null}  shopSaleId        Sale Id to use for transaction or null if none used
+   * @return  {Promise}              Promise that will resolve when done.
+   */
+  static purchaseProductWithPremiumCurrency(userId,sku,shopSaleId){
+    Logger.module("ShopModule").debug(`purchaseProductWithPremiumCurrency() -> user ${userId} buying ${sku}`);
 
-    # userId must be defined
-    unless userId
-      Logger.module("ShopModule").debug "purchaseProductWithPremiumCurrency() -> invalid user ID - #{userId?.blue}.".red
-      return Promise.reject(new Error("Can not process purchase : invalid user ID - #{userId}"))
+    // userId must be defined
+    if (!userId) {
+      Logger.module("ShopModule").debug(`purchaseProductWithPremiumCurrency() -> invalid user ID - ${(userId != null ? userId.blue : undefined)}.`.red);
+      return Promise.reject(new Error(`Can not process purchase : invalid user ID - ${userId}`));
+    }
 
-    # sku must be defined
-    unless sku
-      Logger.module("ShopModule").debug "purchaseProductWithPremiumCurrency() -> invalid SKU - #{sku?.blue}.".red
-      return Promise.reject(new Error("Can not process purchase : invalid SKU - #{sku}"))
+    // sku must be defined
+    if (!sku) {
+      Logger.module("ShopModule").debug(`purchaseProductWithPremiumCurrency() -> invalid SKU - ${(sku != null ? sku.blue : undefined)}.`.red);
+      return Promise.reject(new Error(`Can not process purchase : invalid SKU - ${sku}`));
+    }
 
-    NOW_UTC_MOMENT = moment.utc()
-    this_obj = {}
+    const NOW_UTC_MOMENT = moment.utc();
+    const this_obj = {};
 
-    productData = ShopModule.productDataForSKU(sku)
+    const productData = ShopModule.productDataForSKU(sku);
 
-    if not productData?
-      Logger.module("ShopModule").debug "purchaseProductWithPremiumCurrency() -> no product found for SKU - #{sku?.blue}.".red
-      return Promise.reject(new Errors.NotFoundError("Could not find product for SKU - #{sku}"))
+    if ((productData == null)) {
+      Logger.module("ShopModule").debug(`purchaseProductWithPremiumCurrency() -> no product found for SKU - ${(sku != null ? sku.blue : undefined)}.`.red);
+      return Promise.reject(new Errors.NotFoundError(`Could not find product for SKU - ${sku}`));
+    }
 
-    this_obj.premCurrencyPrice = productData.price
+    this_obj.premCurrencyPrice = productData.price;
 
-    if this_obj.premCurrencyPrice == 0
-      return Promise.reject(new Errors.NotFoundError("Could not find price for product: #{sku}"))
+    if (this_obj.premCurrencyPrice === 0) {
+      return Promise.reject(new Errors.NotFoundError(`Could not find price for product: ${sku}`));
+    }
 
-    txPromise = knex.transaction (tx)->
-      return tx("users").where('id', userId).first('ltv', 'username', 'has_purchased_starter_bundle')
-      .bind this_obj
-      .then (userRow)->
-        @.userRow = userRow
+    var txPromise = knex.transaction(tx => tx("users").where('id', userId).first('ltv', 'username', 'has_purchased_starter_bundle')
+    .bind(this_obj)
+    .then(function(userRow){
+      this.userRow = userRow;
 
-        if sku == "STARTERBUNDLE_201604" and userRow.has_purchased_starter_bundle
-          throw new Errors.AlreadyExistsError("Player already purchased the starter bundle.")
+      if ((sku === "STARTERBUNDLE_201604") && userRow.has_purchased_starter_bundle) {
+        throw new Errors.AlreadyExistsError("Player already purchased the starter bundle.");
+      }
 
-        if productData.purchase_limit?
-          return tx("user_currency_log").count().where("user_id",userId).andWhere('sku',sku)
-          .then (count)->
-            count = parseInt(count[0].count)
-            Logger.module("InventoryModule").debug "purchaseProductWithPremiumCurrency() -> product #{sku} has a purchase limit of #{productData.purchase_limit} and user #{userId.blue} has purchased #{count} so far."
-            if count >= productData.purchase_limit
-              throw new Errors.AlreadyExistsError("This product has already been purchased.")
+      if (productData.purchase_limit != null) {
+        return tx("user_currency_log").count().where("user_id",userId).andWhere('sku',sku)
+        .then(function(count){
+          count = parseInt(count[0].count);
+          Logger.module("InventoryModule").debug(`purchaseProductWithPremiumCurrency() -> product ${sku} has a purchase limit of ${productData.purchase_limit} and user ${userId.blue} has purchased ${count} so far.`);
+          if (count >= productData.purchase_limit) {
+            throw new Errors.AlreadyExistsError("This product has already been purchased.");
+          }
+        });
+      }
 
-        if productData.type == "cosmetic"
-          return tx("user_cosmetic_inventory").where("user_id",userId).andWhere("cosmetic_id",productData.id).first()
-          .then (row)->
-            if row?
-              throw new Errors.AlreadyExistsError("This cosmetic item is already in the user inventory.")
-      .then ()->
+      if (productData.type === "cosmetic") {
+        return tx("user_cosmetic_inventory").where("user_id",userId).andWhere("cosmetic_id",productData.id).first()
+        .then(function(row){
+          if (row != null) {
+            throw new Errors.AlreadyExistsError("This cosmetic item is already in the user inventory.");
+          }
+        });
+      }}).then(function(){
 
-        if not shopSaleId?
-          # Checks to make sure that a user isn't paying full price for an item that's on sale
-          bufferedTimeToExpireSales = NOW_UTC_MOMENT.clone().subtract(ShopModule.SHOP_SALE_BUFFER_MINUTES,"minutes")
-          return tx("shop_sales").first().where('sku',sku).andWhere("sale_starts_at","<",NOW_UTC_MOMENT.toDate()).andWhere("sale_ends_at",'>',bufferedTimeToExpireSales.toDate()).andWhere("disabled",'=',false)
-          .bind @
-          .then (shopSaleRow) ->
-            if (shopSaleRow?)
-              throw new Error("Attempting to purchase an item #{sku} that is on sale #{shopSaleRow.sale_id} without sale price.")
-            else
-              return Promise.resolve()
-        else
-          # Check if there is a matching active sale if provided with a sale id
-          return tx("shop_sales").first().where('sale_id',shopSaleId)
-          .bind @
-          .then (shopSaleRow) ->
-            if (not shopSaleRow?)
-              throw new Errors.ShopSaleDoesNotExistError("There is no matching sale with id (#{shopSaleId}) for product sku #{sku}.")
-            else if (not shopSaleRow.sale_starts_at? or moment.utc(shopSaleRow.sale_starts_at).isAfter(NOW_UTC_MOMENT))
-              throw new Errors.ShopSaleDoesNotExistError("Matching sale with id (#{shopSaleId}) for product sku #{sku} has not started.")
-            else if (not shopSaleRow.sale_ends_at? or moment.utc(shopSaleRow.sale_ends_at).add(ShopModule.SHOP_SALE_BUFFER_MINUTES,"minutes").isBefore(NOW_UTC_MOMENT))
-              throw new Errors.ShopSaleDoesNotExistError("Matching sale with id (#{shopSaleId}) for product sku #{sku} has expired.")
-            else if (shopSaleRow.disabled)
-              throw new Error("Matching sale with id (#{shopSaleId}) for product sku #{sku} is disabled.")
-            else if (shopSaleRow.sku != sku)
-              throw new Errors.ShopSaleDoesNotExistError("No matching sale with id (#{shopSaleId}) for product sku #{sku}.")
-            else
-              # Matching sale success
-              @.premCurrencyPrice = shopSaleRow.sale_price
-              return Promise.resolve()
-
-      .then ()->
-        # txPromise,trx,userId,amount,memo
-        return InventoryModule.debitPremiumFromUser(txPromise, tx, userId, @.premCurrencyPrice)
-      .then ()->
-        # txPromise, tx, userId, userRow, sku, price, shopSaleId, systemTime
-        return ShopModule._addPremiumChargeToUser(txPromise, tx, userId, @.userRow, sku, @.premCurrencyPrice, shopSaleId, NOW_UTC_MOMENT)
-      .then ()->
-        return ShopModule._awardProductDataContents(txPromise, tx, userId, generatePushId(), productData, NOW_UTC_MOMENT)
-      .then (value)->
-        @.to_return = value
-      .then ()-> SyncModule._bumpUserTransactionCounter(tx,userId)
-
-    .bind this_obj
-    .then () ->
-      return @.to_return
+      if ((shopSaleId == null)) {
+        // Checks to make sure that a user isn't paying full price for an item that's on sale
+        const bufferedTimeToExpireSales = NOW_UTC_MOMENT.clone().subtract(ShopModule.SHOP_SALE_BUFFER_MINUTES,"minutes");
+        return tx("shop_sales").first().where('sku',sku).andWhere("sale_starts_at","<",NOW_UTC_MOMENT.toDate()).andWhere("sale_ends_at",'>',bufferedTimeToExpireSales.toDate()).andWhere("disabled",'=',false)
+        .bind(this)
+        .then(function(shopSaleRow) {
+          if (shopSaleRow != null) {
+            throw new Error(`Attempting to purchase an item ${sku} that is on sale ${shopSaleRow.sale_id} without sale price.`);
+          } else {
+            return Promise.resolve();
+          }
+        });
+      } else {
+        // Check if there is a matching active sale if provided with a sale id
+        return tx("shop_sales").first().where('sale_id',shopSaleId)
+        .bind(this)
+        .then(function(shopSaleRow) {
+          if ((shopSaleRow == null)) {
+            throw new Errors.ShopSaleDoesNotExistError(`There is no matching sale with id (${shopSaleId}) for product sku ${sku}.`);
+          } else if ((shopSaleRow.sale_starts_at == null) || moment.utc(shopSaleRow.sale_starts_at).isAfter(NOW_UTC_MOMENT)) {
+            throw new Errors.ShopSaleDoesNotExistError(`Matching sale with id (${shopSaleId}) for product sku ${sku} has not started.`);
+          } else if ((shopSaleRow.sale_ends_at == null) || moment.utc(shopSaleRow.sale_ends_at).add(ShopModule.SHOP_SALE_BUFFER_MINUTES,"minutes").isBefore(NOW_UTC_MOMENT)) {
+            throw new Errors.ShopSaleDoesNotExistError(`Matching sale with id (${shopSaleId}) for product sku ${sku} has expired.`);
+          } else if (shopSaleRow.disabled) {
+            throw new Error(`Matching sale with id (${shopSaleId}) for product sku ${sku} is disabled.`);
+          } else if (shopSaleRow.sku !== sku) {
+            throw new Errors.ShopSaleDoesNotExistError(`No matching sale with id (${shopSaleId}) for product sku ${sku}.`);
+          } else {
+            // Matching sale success
+            this.premCurrencyPrice = shopSaleRow.sale_price;
+            return Promise.resolve();
+          }
+        });
+      }}).then(function(){
+      // txPromise,trx,userId,amount,memo
+      return InventoryModule.debitPremiumFromUser(txPromise, tx, userId, this.premCurrencyPrice);}).then(function(){
+      // txPromise, tx, userId, userRow, sku, price, shopSaleId, systemTime
+      return ShopModule._addPremiumChargeToUser(txPromise, tx, userId, this.userRow, sku, this.premCurrencyPrice, shopSaleId, NOW_UTC_MOMENT);}).then(() => ShopModule._awardProductDataContents(txPromise, tx, userId, generatePushId(), productData, NOW_UTC_MOMENT)).then(function(value){
+      return this.to_return = value;}).then(() => SyncModule._bumpUserTransactionCounter(tx,userId))).bind(this_obj)
+    .then(function() {
+      return this.to_return;
+    });
 
     return txPromise
-    .then ()->
-      return DuelystFirebase.connect().getRootRef()
+    .then(() => DuelystFirebase.connect().getRootRef());
+  }
 
-  @_awardProductDataContents: (txPromise,tx,userId,chargeId,productData,systemTime)->
-    NOW_UTC_MOMENT = systemTime || moment.utc()
-    allPromises = []
+  static _awardProductDataContents(txPromise,tx,userId,chargeId,productData,systemTime){
+    let cosmeticId, i;
+    const NOW_UTC_MOMENT = systemTime || moment.utc();
+    const allPromises = [];
 
-    # Create an array of promises of booster pack push calls
-    if productData.type == "card_pack"
-      for i in [1..productData.qty]
-        allPromises.push(InventoryModule.addBoosterPackToUser(txPromise,tx,userId,productData.card_set,'hard',chargeId))
+    // Create an array of promises of booster pack push calls
+    if (productData.type === "card_pack") {
+      let asc, end;
+      for (i = 1, end = productData.qty, asc = 1 <= end; asc ? i <= end : i >= end; asc ? i++ : i--) {
+        allPromises.push(InventoryModule.addBoosterPackToUser(txPromise,tx,userId,productData.card_set,'hard',chargeId));
+      }
+    }
 
-    # Create an array of promises of booster pack push calls
-    if productData.type == "gauntlet_tickets"
-      for i in [1..productData.qty]
-        allPromises.push(InventoryModule.addArenaTicketToUser(txPromise,tx,userId,'hard',chargeId))
+    // Create an array of promises of booster pack push calls
+    if (productData.type === "gauntlet_tickets") {
+      let asc1, end1;
+      for (i = 1, end1 = productData.qty, asc1 = 1 <= end1; asc1 ? i <= end1 : i >= end1; asc1 ? i++ : i--) {
+        allPromises.push(InventoryModule.addArenaTicketToUser(txPromise,tx,userId,'hard',chargeId));
+      }
+    }
 
-    # Create an array of promises
-    if productData.type == "cosmetic"
-      allPromises.push(InventoryModule.giveUserCosmeticId(txPromise,tx,userId,productData.id,'hard',chargeId))
+    // Create an array of promises
+    if (productData.type === "cosmetic") {
+      allPromises.push(InventoryModule.giveUserCosmeticId(txPromise,tx,userId,productData.id,'hard',chargeId));
+    }
 
-    # if this product is supposed to bundle cosmetics
-    # NOTE: "cosmetics_bundle" is a product type that ONLY bundles cosmetics, but any product can bundle cosmetics
-    # Create an array of promises
-    if productData.bundle_cosmetic_ids?.length > 0
-      for cosmeticId in productData.bundle_cosmetic_ids
-        allPromises.push(InventoryModule.giveUserCosmeticId(txPromise,tx,userId,cosmeticId,'hard',chargeId))
+    // if this product is supposed to bundle cosmetics
+    // NOTE: "cosmetics_bundle" is a product type that ONLY bundles cosmetics, but any product can bundle cosmetics
+    // Create an array of promises
+    if ((productData.bundle_cosmetic_ids != null ? productData.bundle_cosmetic_ids.length : undefined) > 0) {
+      for (cosmeticId of Array.from(productData.bundle_cosmetic_ids)) {
+        allPromises.push(InventoryModule.giveUserCosmeticId(txPromise,tx,userId,cosmeticId,'hard',chargeId));
+      }
+    }
 
-    if productData.type == "loot_chest_key"
-      allPromises.push(CosmeticChestsModule.giveUserChestKey(txPromise,tx,userId,productData["chest_type"],productData.qty,'hard',chargeId))
+    if (productData.type === "loot_chest_key") {
+      allPromises.push(CosmeticChestsModule.giveUserChestKey(txPromise,tx,userId,productData["chest_type"],productData.qty,'hard',chargeId));
+    }
 
-    if productData.type == "starter_bundle"
-      for orbsData in productData.spirit_orbs
-        for i in [1..orbsData.count]
-          allPromises.push(InventoryModule.addBoosterPackToUser(txPromise,tx,userId,orbsData.card_set,'hard',chargeId))
+    if (productData.type === "starter_bundle") {
+      for (var orbsData of Array.from(productData.spirit_orbs)) {
+        var asc2, end2;
+        for (i = 1, end2 = orbsData.count, asc2 = 1 <= end2; asc2 ? i <= end2 : i >= end2; asc2 ? i++ : i--) {
+          allPromises.push(InventoryModule.addBoosterPackToUser(txPromise,tx,userId,orbsData.card_set,'hard',chargeId));
+        }
+      }
+    }
 
-    if productData.type == "newbie_bundle"
-      allPromises.push(InventoryModule.giveUserCards(txPromise,tx,userId,productData.cards,"hard",chargeId))
-      for cosmeticId in productData.cosmeticIds
-        allPromises.push(InventoryModule.giveUserCosmeticId(txPromise,tx,userId,cosmeticId,'hard',chargeId))
+    if (productData.type === "newbie_bundle") {
+      allPromises.push(InventoryModule.giveUserCards(txPromise,tx,userId,productData.cards,"hard",chargeId));
+      for (cosmeticId of Array.from(productData.cosmeticIds)) {
+        allPromises.push(InventoryModule.giveUserCosmeticId(txPromise,tx,userId,cosmeticId,'hard',chargeId));
+      }
+    }
 
-    if productData.type == "complete_card_set"
-      allPromises.push(InventoryModule.addRemainingOrbsForCardSetToUser(txPromise,tx,userId,productData.card_set, false,'hard',chargeId))
+    if (productData.type === "complete_card_set") {
+      allPromises.push(InventoryModule.addRemainingOrbsForCardSetToUser(txPromise,tx,userId,productData.card_set, false,'hard',chargeId));
+    }
 
-    if productData.type == "rift_tickets"
-      for i in [1..productData.qty]
-        allPromises.push(RiftModule.addRiftTicketToUser(txPromise, tx, userId, 'hard', chargeId))
+    if (productData.type === "rift_tickets") {
+      let asc3, end3;
+      for (i = 1, end3 = productData.qty, asc3 = 1 <= end3; asc3 ? i <= end3 : i >= end3; asc3 ? i++ : i--) {
+        allPromises.push(RiftModule.addRiftTicketToUser(txPromise, tx, userId, 'hard', chargeId));
+      }
+    }
 
-    if productData.type == "gift_crate"
-      for i in [1..productData.qty]
-        allPromises.push(GiftCrateModule.addGiftCrateToUser(txPromise, tx, userId, productData["crate_type"], chargeId))
+    if (productData.type === "gift_crate") {
+      let asc4, end4;
+      for (i = 1, end4 = productData.qty, asc4 = 1 <= end4; asc4 ? i <= end4 : i >= end4; asc4 ? i++ : i--) {
+        allPromises.push(GiftCrateModule.addGiftCrateToUser(txPromise, tx, userId, productData["crate_type"], chargeId));
+      }
+    }
 
-    # when we're all done with the entire promise chain, set the battlemap if one was purchased
-    txPromise.then ()->
-      if productData.type == "cosmetic" and CosmeticsFactory.cosmeticForIdentifier(productData.id)?.typeId == CosmeticsTypeLookup.BattleMap
-        return UsersModule.setBattleMapId(userId,productData.id)
+    // when we're all done with the entire promise chain, set the battlemap if one was purchased
+    txPromise.then(function(){
+      if ((productData.type === "cosmetic") && (__guard__(CosmeticsFactory.cosmeticForIdentifier(productData.id), x => x.typeId) === CosmeticsTypeLookup.BattleMap)) {
+        return UsersModule.setBattleMapId(userId,productData.id);
+      }
+    });
 
-    return Promise.all(allPromises)
+    return Promise.all(allPromises);
+  }
 
-  @_allProducts: ()->
-    categories = _.keys(ShopData)
-    # Logger.module("ShopModule").debug "all categories:", categories
-    categoryProducts = _.map categories, (category)->
-      return _.values ShopData[category]
-    allProducts = _.flatten categoryProducts
-    # Logger.module("ShopModule").debug "all products:", allProducts
-    return allProducts
+  static _allProducts(){
+    const categories = _.keys(ShopData);
+    // Logger.module("ShopModule").debug "all categories:", categories
+    const categoryProducts = _.map(categories, category => _.values(ShopData[category]));
+    const allProducts = _.flatten(categoryProducts);
+    // Logger.module("ShopModule").debug "all products:", allProducts
+    return allProducts;
+  }
 
-  ###*
-  # Grab product JSON definition from product catalog
-  # @public
-  # @param  {String}  sku            Product SKU to grab data for.
-  # @return  {Object}              JSON product definition.
-  ###
-  @productDataForSKU: (sku)->
-    productData = _.find ShopModule._allProducts(), (p)-> return p.sku == sku
-    productData ?= CosmeticsFactory.cosmeticProductAttrsForSKU(sku)
+  /**
+   * Grab product JSON definition from product catalog
+   * @public
+   * @param  {String}  sku            Product SKU to grab data for.
+   * @return  {Object}              JSON product definition.
+   */
+  static productDataForSKU(sku){
+    let productData = _.find(ShopModule._allProducts(), p => p.sku === sku);
+    return productData != null ? productData : (productData = CosmeticsFactory.cosmeticProductAttrsForSKU(sku));
+  }
 
-  @creditUserPremiumCurrency: (txPromise, tx, userId, amount) ->
-    # userId must be defined
-    if not userId?
-      return Promise.reject(new Error("giveUserPremiumCurrency: invalid user ID - #{userId}"))
+  static creditUserPremiumCurrency(txPromise, tx, userId, amount) {
+    // userId must be defined
+    if ((userId == null)) {
+      return Promise.reject(new Error(`giveUserPremiumCurrency: invalid user ID - ${userId}`));
+    }
 
-    amount = parseInt(amount)
-    if not amount? or amount <= 0 or _.isNaN(amount)
-      return Promise.reject(new Error("giveUserPremiumCurrency: invalid amount - #{amount}"))
+    amount = parseInt(amount);
+    if ((amount == null) || (amount <= 0) || _.isNaN(amount)) {
+      return Promise.reject(new Error(`giveUserPremiumCurrency: invalid amount - ${amount}`));
+    }
 
-    this_obj = {}
+    const this_obj = {};
 
-    trxPromise = knex.transaction (tx)->
+    const trxPromise = knex.transaction(tx => tx("users").where('id',userId).first('id').forUpdate()
+    .bind(this_obj)
+    .then(function(userRow){
+      this.userRow = userRow;
 
-      return tx("users").where('id',userId).first('id').forUpdate()
-      .bind this_obj
-      .then (userRow)->
-        @.userRow = userRow
+      return tx("user_premium_currency").where("user_id",userId).first('amount');}).then(function(userPremCurrencyRow) {
+      const allPromises = [];
 
-        return tx("user_premium_currency").where("user_id",userId).first('amount')
-      .then (userPremCurrencyRow) ->
-        allPromises = []
+      let needsInsert = false;
+      if ((userPremCurrencyRow == null)) {
+        needsInsert = true;
+        userPremCurrencyRow =
+          {user_id: userId};
+      }
+      this.userPremCurrencyRow = userPremCurrencyRow;
+      if (this.userPremCurrencyRow.amount == null) { this.userPremCurrencyRow.amount = 0; }
+      this.userPremCurrencyRow.amount += amount;
 
-        needsInsert = false
-        if (not userPremCurrencyRow?)
-          needsInsert = true
-          userPremCurrencyRow =
-            user_id: userId
-        @.userPremCurrencyRow = userPremCurrencyRow
-        @.userPremCurrencyRow.amount ?= 0
-        @.userPremCurrencyRow.amount += amount
-
-        if needsInsert
-          allPromises.push tx("user_premium_currency").where("user_id",userId).first('amount').insert(@.userPremCurrencyRow)
-        else
-          allPromises.push tx("user_premium_currency").where("user_id",userId).first('amount').update(
-            amount: @.userPremCurrencyRow.amount
-          )
+      if (needsInsert) {
+        allPromises.push(tx("user_premium_currency").where("user_id",userId).first('amount').insert(this.userPremCurrencyRow));
+      } else {
+        allPromises.push(tx("user_premium_currency").where("user_id",userId).first('amount').update({
+          amount: this.userPremCurrencyRow.amount
+        })
+        );
+      }
 
 
 
-        return Promise.all(allPromises)
+      return Promise.all(allPromises);
+    })).bind(this_obj)
+    .then(function() {
+      return this.userPremCurrencyRow;
+    });
 
-    .bind this_obj
-    .then () ->
-      return @.userPremCurrencyRow
+    return trxPromise;
+  }
 
-    return trxPromise
+  // Amount is negative value
+  static debitUserPremiumCurrency(txPromise, tx, userId, amount) {
+    // userId must be defined
+    if ((userId == null)) {
+      return Promise.reject(new Error(`debitUserPremiumCurrency: invalid user ID - ${userId}`));
+    }
 
-  # Amount is negative value
-  @debitUserPremiumCurrency: (txPromise, tx, userId, amount) ->
-    # userId must be defined
-    if not userId?
-      return Promise.reject(new Error("debitUserPremiumCurrency: invalid user ID - #{userId}"))
+    amount = parseInt(amount);
+    if ((amount == null) || (amount >= 0) || _.isNaN(amount)) {
+      return Promise.reject(new Error(`debitUserPremiumCurrency: invalid amount - ${amount}`));
+    }
 
-    amount = parseInt(amount)
-    if not amount? or amount >= 0 or _.isNaN(amount)
-      return Promise.reject(new Error("debitUserPremiumCurrency: invalid amount - #{amount}"))
+    const this_obj = {};
 
-    this_obj = {}
+    const trxPromise = knex.transaction(tx => tx("users").where('id',userId).first('id').forUpdate()
+    .bind(this_obj)
+    .then(function(userRow){
+      this.userRow = userRow;
 
-    trxPromise = knex.transaction (tx)->
+      return tx("user_premium_currency").where("user_id",userId).first('amount');}).then(function(userPremCurrencyRow) {
+      const allPromises = [];
 
-      return tx("users").where('id',userId).first('id').forUpdate()
-      .bind this_obj
-      .then (userRow)->
-        @.userRow = userRow
+      if ((userPremCurrencyRow == null)) {
+        throw new Errors.InsufficientFundsError("Insufficient currency to debit");
+      }
 
-        return tx("user_premium_currency").where("user_id",userId).first('amount')
-      .then (userPremCurrencyRow) ->
-        allPromises = []
+      this.userPremCurrencyRow = userPremCurrencyRow;
+      if (this.userPremCurrencyRow.amount == null) { this.userPremCurrencyRow.amount = 0; }
 
-        if (not userPremCurrencyRow?)
-          throw new Errors.InsufficientFundsError("Insufficient currency to debit")
+      if (this.userPremCurrencyRow.amount < amount) {
+        throw new Errors.InsufficientFundsError("Insufficient currency to debit");
+      }
 
-        @.userPremCurrencyRow = userPremCurrencyRow
-        @.userPremCurrencyRow.amount ?= 0
+      this.userPremCurrencyRow.amount += amount;
 
-        if (@.userPremCurrencyRow.amount < amount)
-          throw new Errors.InsufficientFundsError("Insufficient currency to debit")
+      allPromises.push(tx("user_premium_currency").where("user_id",userId).first('amount').update({
+        amount: this.userPremCurrencyRow.amount
+      })
+      );
 
-        @.userPremCurrencyRow.amount += amount
+      // txPromise,tx,userRow,userId,sku,price,currencyCode,chargeId,chargeJson,paymentType,createdAt
+      return Promise.all(allPromises);
+    })).bind(this_obj)
+    .then(function() {
+      return this.purchaseId;
+    });
+    return trxPromise;
+  }
+}
+ShopModule.initClass();
 
-        allPromises.push tx("user_premium_currency").where("user_id",userId).first('amount').update(
-          amount: @.userPremCurrencyRow.amount
-        )
+module.exports = ShopModule;
 
-        # txPromise,tx,userRow,userId,sku,price,currencyCode,chargeId,chargeJson,paymentType,createdAt
-        return Promise.all(allPromises)
-    .bind this_obj
-    .then () ->
-      return @.purchaseId
-    return trxPromise
-
-module.exports = ShopModule
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

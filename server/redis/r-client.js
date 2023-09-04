@@ -1,32 +1,36 @@
-Promise = require 'bluebird'
-redis = require 'redis'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+let RedisClient;
+const Promise = require('bluebird');
+const redis = require('redis');
 
-Logger = require '../../app/common/logger.coffee'
-config = require '../../config/config.js'
+const Logger = require('../../app/common/logger.coffee');
+const config = require('../../config/config.js');
 
-Promise.promisifyAll(redis)
+Promise.promisifyAll(redis);
 
-# redis client
-module.exports = RedisClient = redis.createClient({
+// redis client
+module.exports = (RedisClient = redis.createClient({
   host: config.get('redis.host'),
   port: config.get('redis.port'),
   detect_buffers: true
-})
+}));
 
-# redis auth
-redisPassword = config.get("redis.password")
-if redisPassword
-  RedisClient.auth(redisPassword)
+// redis auth
+const redisPassword = config.get("redis.password");
+if (redisPassword) {
+  RedisClient.auth(redisPassword);
+}
 
-# Ready event
-RedisClient.on "ready", () ->
-  Logger.module("REDIS").debug "client onReady"
+// Ready event
+RedisClient.on("ready", () => Logger.module("REDIS").debug("client onReady"));
 
-# Connect event
-RedisClient.on "connect", () ->
-  Logger.module("REDIS").debug "client onConnect"
+// Connect event
+RedisClient.on("connect", () => Logger.module("REDIS").debug("client onConnect"));
 
-# Error event
-# TODO: We should probably do something if we receive an error
-RedisClient.on "error", (error) ->
-  Logger.module("REDIS").error "client onError: #{JSON.stringify(error)})"
+// Error event
+// TODO: We should probably do something if we receive an error
+RedisClient.on("error", error => Logger.module("REDIS").error(`client onError: ${JSON.stringify(error)})`));

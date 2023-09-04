@@ -1,21 +1,32 @@
-Achievement = require 'app/sdk/achievements/achievement'
-moment = require 'moment'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Achievement = require('app/sdk/achievements/achievement');
+const moment = require('moment');
 
-# This achievement exists so we can give new players a head start on their collection.
-class NewPlayerSpiritLoginAchievement extends Achievement
-  @id: "newPlayerSpiritLoginAchievement"
-  @title: "Welcome to Duelyst!"
-  @description: "Use Spirit to craft cards in the Collection menu."
-  @progressRequired: 1
-  @rewards:
-    spirit: 50000
+// This achievement exists so we can give new players a head start on their collection.
+class NewPlayerSpiritLoginAchievement extends Achievement {
+  static initClass() {
+    this.id = "newPlayerSpiritLoginAchievement";
+    this.title = "Welcome to Duelyst!";
+    this.description = "Use Spirit to craft cards in the Collection menu.";
+    this.progressRequired = 1;
+    this.rewards =
+      {spirit: 50000};
+  
+    this.enabled = true;
+  }
 
-  @enabled: true
+  static progressForLoggingIn(currentLoginMoment) {
+    return 1;
+  }
 
-  @progressForLoggingIn: (currentLoginMoment) ->
-    return 1
+  static getLoginAchievementStartsMoment() {
+    return moment.utc("2022-10-28T00:00-00:00");
+  }
+}
+NewPlayerSpiritLoginAchievement.initClass();
 
-  @getLoginAchievementStartsMoment: () ->
-    return moment.utc("2022-10-28T00:00-00:00")
-
-module.exports = NewPlayerSpiritLoginAchievement
+module.exports = NewPlayerSpiritLoginAchievement;

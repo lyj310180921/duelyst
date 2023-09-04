@@ -1,55 +1,60 @@
-express = require 'express'
-router = express.Router()
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const express = require('express');
+const router = express.Router();
 
-expressJwt = require 'express-jwt'
-util = require 'util'
-uuid = require 'node-uuid'
-#AWS = require "aws-sdk"
-Promise = require "bluebird"
-fs = require 'fs'
-hbs = require 'hbs'
-handlebars = hbs.handlebars
-moment = require 'moment'
+const expressJwt = require('express-jwt');
+const util = require('util');
+const uuid = require('node-uuid');
+//AWS = require "aws-sdk"
+const Promise = require("bluebird");
+const fs = require('fs');
+const hbs = require('hbs');
+const {
+  handlebars
+} = hbs;
+const moment = require('moment');
 
-generatePushId = require '../../app/common/generate_push_id'
+const generatePushId = require('../../app/common/generate_push_id');
 
-# lib Modules
-isSignedIn = require '../middleware/signed_in'
-Logger = require '../../app/common/logger.coffee'
-Errors = require '../lib/custom_errors'
+// lib Modules
+const isSignedIn = require('../middleware/signed_in');
+const Logger = require('../../app/common/logger.coffee');
+const Errors = require('../lib/custom_errors');
 
-# Configuration object
-config = require '../../config/config.js'
+// Configuration object
+const config = require('../../config/config.js');
 
-# set up AWS
-#AWS.config.update
-#  accessKeyId: config.get("s3_client_logs.key")
-#  secretAccessKey: config.get("s3_client_logs.secret")
-#s3 = new AWS.S3()
-#Promise.promisifyAll(s3)
+// set up AWS
+//AWS.config.update
+//  accessKeyId: config.get("s3_client_logs.key")
+//  secretAccessKey: config.get("s3_client_logs.secret")
+//s3 = new AWS.S3()
+//Promise.promisifyAll(s3)
 
-# async promise to get client template
-loadClientLogsHandlebarsTemplateAsync = new Promise (resolve,reject) ->
-  readFile = Promise.promisify(require("fs").readFile)
-  readFile(__dirname + '/../templates/client-logs.hbs')
-  .then (template)->
-    hbs_template = handlebars.compile(template.toString())
-    resolve(hbs_template)
-  .catch (err) ->
-    reject(err)
+// async promise to get client template
+const loadClientLogsHandlebarsTemplateAsync = new Promise(function(resolve,reject) {
+  const readFile = Promise.promisify(require("fs").readFile);
+  return readFile(__dirname + '/../templates/client-logs.hbs')
+  .then(function(template){
+    const hbs_template = handlebars.compile(template.toString());
+    return resolve(hbs_template);}).catch(err => reject(err));
+});
 
-## Require authentication
-router.use '/utility', isSignedIn
+//# Require authentication
+router.use('/utility', isSignedIn);
 
-# Unused handler to facilitate uploading logs to S3.
-# Stub the handler so we can remove the AWS SDK dependency.
-router.post "/utility/client_logs", (req, res, next) ->
-  return res.status(403).json({
-    'status': 'error',
-    'code': 403,
-    'message': 'This endpoint is deprecated.',
-  })
-  ###
+// Unused handler to facilitate uploading logs to S3.
+// Stub the handler so we can remove the AWS SDK dependency.
+router.post("/utility/client_logs", (req, res, next) => res.status(403).json({
+  'status': 'error',
+  'code': 403,
+  'message': 'This endpoint is deprecated.',
+})
+/*
   user_id = req.user.d.id
   log_id = "#{moment().utc().format("YYYY-MM-DD---hh-mm-ss")}.#{uuid.v4()}"
 
@@ -59,10 +64,10 @@ router.post "/utility/client_logs", (req, res, next) ->
   url = "https://s3.#{config.get('aws.region')}.amazonaws.com/" + bucket + "/" + filename
 
   loadClientLogsHandlebarsTemplateAsync.then (template) ->
-    # render client log as HTML
+    * render client log as HTML
     html = template(req.body)
 
-    # upload parameters
+    * upload parameters
     params =
       Bucket: bucket
       Key: filename
@@ -77,6 +82,6 @@ router.post "/utility/client_logs", (req, res, next) ->
   .catch (err) ->
     Logger.module("EXPRESS").error "ERROR UPLOADING #{user_id.blue} CLIENT LOGS to #{url} : #{err.message}".red
     next(err)
-  ###
+  */);
 
-module.exports = router
+module.exports = router;

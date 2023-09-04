@@ -1,107 +1,140 @@
-Promise = require 'bluebird'
-firebaseAdmin = require 'firebase-admin'
-colors = require 'colors'
-moment = require 'moment'
-util = require 'util'
-_ = require 'underscore'
-url = require 'url'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+let error, firebaseServiceAccount;
+const Promise = require('bluebird');
+const firebaseAdmin = require('firebase-admin');
+const colors = require('colors');
+const moment = require('moment');
+const util = require('util');
+const _ = require('underscore');
+const url = require('url');
 
-Logger = require '../../app/common/logger.coffee'
-config = require '../../config/config.js'
-defaultFirebaseUrl = config.get('firebase.url')
-firebaseLoggingEnabled = config.get('firebase.loggingEnabled')
+const Logger = require('../../app/common/logger.coffee');
+const config = require('../../config/config.js');
+const defaultFirebaseUrl = config.get('firebase.url');
+const firebaseLoggingEnabled = config.get('firebase.loggingEnabled');
 
-# Read service account credentials.
-try
-  # Development mode uses a local JSON file containing credentials.
-  if config.isDevelopment()
-    firebaseServiceAccount = require('../../serviceAccountKey.json')
-  # Staging/Production mode pulls secrets from AWS SSM into the environment.
-  # https://github.com/firebase/firebase-admin-node/blob/v11.0.1/src/app/credential-internal.ts#L167L174
-  else
+// Read service account credentials.
+try {
+  // Development mode uses a local JSON file containing credentials.
+  if (config.isDevelopment()) {
+    firebaseServiceAccount = require('../../serviceAccountKey.json');
+  // Staging/Production mode pulls secrets from AWS SSM into the environment.
+  // https://github.com/firebase/firebase-admin-node/blob/v11.0.1/src/app/credential-internal.ts#L167L174
+  } else {
     firebaseServiceAccount = {
       project_id: config.get('firebase.projectId'),
       client_email: config.get('firebase.clientEmail'),
       private_key: config.get('firebase.privateKey'),
+    };
+    if (!firebaseServiceAccount.project_id) {
+      throw new Error('FIREBASE_PROJECT_ID must be set!');
     }
-    if !firebaseServiceAccount.project_id
-      throw new Error('FIREBASE_PROJECT_ID must be set!')
-    if !firebaseServiceAccount.client_email
-      throw new Error('FIREBASE_CLIENT_EMAIL must be set!')
-    if !firebaseServiceAccount.private_key
-      throw new Error('FIREBASE_PRIVATE_KEY must be set!')
-catch error
-  Logger.module('Firebase').error "Failed to read Firebase credentials: #{error}"
-  firebaseServiceAccount = {}
+    if (!firebaseServiceAccount.client_email) {
+      throw new Error('FIREBASE_CLIENT_EMAIL must be set!');
+    }
+    if (!firebaseServiceAccount.private_key) {
+      throw new Error('FIREBASE_PRIVATE_KEY must be set!');
+    }
+  }
+} catch (error1) {
+  error = error1;
+  Logger.module('Firebase').error(`Failed to read Firebase credentials: ${error}`);
+  firebaseServiceAccount = {};
+}
 
-class DuelystFirebaseModule
-  # App objects keyed by URL
-  @apps: {}
+class DuelystFirebaseModule {
+  static initClass() {
+    // App objects keyed by URL
+    this.apps = {};
+  }
 
-  # Connect to a Firebase URL, returns connection if already exists
-  @connect: (firebaseUrl = defaultFirebaseUrl) ->
-    # Check for an existing connection on this URL.
-    # TODO: check token expiration, new tokens from callers, etc.
-    key = url.format(url.parse(firebaseUrl))
-    if @apps[key]?
-      return @apps[key]
+  // Connect to a Firebase URL, returns connection if already exists
+  static connect(firebaseUrl) {
+    // Check for an existing connection on this URL.
+    // TODO: check token expiration, new tokens from callers, etc.
+    if (firebaseUrl == null) { firebaseUrl = defaultFirebaseUrl; }
+    const key = url.format(url.parse(firebaseUrl));
+    if (this.apps[key] != null) {
+      return this.apps[key];
+    }
 
-    # Create a new connection.
-    @apps[key] = new DuelystFirebaseModule(
-      key: key,
-      firebaseUrl: firebaseUrl,
-    )
+    // Create a new connection.
+    return this.apps[key] = new DuelystFirebaseModule({
+      key,
+      firebaseUrl,
+    });
+  }
 
-  # Gracefully disconnect from Firebase.
-  @disconnect: (url) ->
-    if @apps[url]?
-      Logger.module('Firebase').log "disconnecting from #{url}"
-      @apps[url].promise.then (deletable) ->
-        deletable.delete().then (error) ->
-          Logger.module('Firebase').error "failed to delete: #{error.toString()}"
-      delete DuelystFirebaseModule.apps[url]
-    else
-      Logger.module('Firebase').log "already disconnected from #{url}"
+  // Gracefully disconnect from Firebase.
+  static disconnect(url) {
+    if (this.apps[url] != null) {
+      Logger.module('Firebase').log(`disconnecting from ${url}`);
+      this.apps[url].promise.then(deletable => deletable.delete().then(error => Logger.module('Firebase').error(`failed to delete: ${error.toString()}`)));
+      return delete DuelystFirebaseModule.apps[url];
+    } else {
+      return Logger.module('Firebase').log(`already disconnected from ${url}`);
+    }
+  }
 
-  # Count current number of connections
-  @getNumConnections: ->
-    _.size(@apps)
+  // Count current number of connections
+  static getNumConnections() {
+    return _.size(this.apps);
+  }
 
-  # Opens new connections
-  constructor: ({@key, @firebaseUrl}) ->
-    Logger.module('Firebase').log "connect() -> new app connection with db #{@key}"
-    @promise = new Promise (resolve, reject) =>
-      # Validate configuration before attempting to connect.
-      if @firebaseUrl == ''
-        return reject(new Error('firebase.url must be set'))
+  // Opens new connections
+  constructor({key, firebaseUrl}) {
+    this.key = key;
+    this.firebaseUrl = firebaseUrl;
+    Logger.module('Firebase').log(`connect() -> new app connection with db ${this.key}`);
+    this.promise = new Promise((resolve, reject) => {
+      // Validate configuration before attempting to connect.
+      if (this.firebaseUrl === '') {
+        return reject(new Error('firebase.url must be set'));
+      }
 
-      if firebaseLoggingEnabled
-        firebaseAdmin.database.enableLogging(true)
+      if (firebaseLoggingEnabled) {
+        firebaseAdmin.database.enableLogging(true);
+      }
 
-      try
-        app = firebaseAdmin.initializeApp({
+      try {
+        const app = firebaseAdmin.initializeApp({
           credential: firebaseAdmin.credential.cert(firebaseServiceAccount),
-          databaseURL: @firebaseUrl
-        }, @firebaseUrl)
+          databaseURL: this.firebaseUrl
+        }, this.firebaseUrl);
 
-        # Initialize the database before resolving.
-        db = app.database()
-        ref = db.ref()
-        resolve(app)
-      catch e
-        return reject(new Error('failed to initialize firebase app: ' + e))
+        // Initialize the database before resolving.
+        const db = app.database();
+        const ref = db.ref();
+        return resolve(app);
+      } catch (e) {
+        return reject(new Error('failed to initialize firebase app: ' + e));
+      }
+    });
 
-    @promise.catch (error) =>
-      delete DuelystFirebaseModule.apps[@key]
+    this.promise.catch(error => {
+      return delete DuelystFirebaseModule.apps[this.key];
+  });
+  }
 
-  # Returns a Promise with the Firebase root reference
-  getRootRef: ->
-    @promise
-    .then (app) ->
-      try
-        db = app.database()
-        return db.ref()
-      catch e
-        Logger.module('Firebase').error "failed to get ref: #{e.toString()}"
+  // Returns a Promise with the Firebase root reference
+  getRootRef() {
+    return this.promise
+    .then(function(app) {
+      try {
+        const db = app.database();
+        return db.ref();
+      } catch (e) {
+        return Logger.module('Firebase').error(`failed to get ref: ${e.toString()}`);
+      }
+    });
+  }
+}
+DuelystFirebaseModule.initClass();
 
-module.exports = DuelystFirebaseModule
+module.exports = DuelystFirebaseModule;

@@ -1,110 +1,130 @@
-###
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+/*
 Starts main application
-###
-os = require 'os'
-fs = require 'fs'
-path = require 'path'
-mkdirp = require 'mkdirp'
-request = require 'request'
-Promise = require 'bluebird'
-Logger = require '../app/common/logger'
-shutdownLib = require './shutdown'
+*/
+const os = require('os');
+const fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
+const request = require('request');
+const Promise = require('bluebird');
+const Logger = require('../app/common/logger');
+const shutdownLib = require('./shutdown');
 
-# Setup http server and express app
-app = require "./express"
-server = require('http').createServer(app)
+// Setup http server and express app
+const app = require("./express");
+const server = require('http').createServer(app);
 
-# Configuration object
-config = require '../config/config.js'
-env = config.get('env')
-cdnDomain = config.get('aws.cdnDomainName')
-cdnUrl = "https://#{cdnDomain}/#{env}"
-apiPort = config.get('port')
+// Configuration object
+const config = require('../config/config.js');
+const env = config.get('env');
+const cdnDomain = config.get('aws.cdnDomainName');
+const cdnUrl = `https://${cdnDomain}/${env}`;
+const apiPort = config.get('port');
 
-if config.isDevelopment()
-  Logger.module("SERVER").log "DEV MODE: enabling long stack support"
-  process.env.BLUEBIRD_DEBUG = 1
-  Promise.longStackTraces()
+if (config.isDevelopment()) {
+  Logger.module("SERVER").log("DEV MODE: enabling long stack support");
+  process.env.BLUEBIRD_DEBUG = 1;
+  Promise.longStackTraces();
+}
 
-# Methods to download assets from S3
-# TODO : Put in module
-makeDirectory = (cb) ->
-  pubDir = "#{__dirname}/../public/#{env}"
-  Logger.module("API").warn "Creating directory #{pubDir}"
-  mkdirp pubDir, (err) ->
-    if err?
-      Logger.module("API").error "Failed to create directory #{pubDir}: #{err}"
-      cb err
-    else
-      cb null
+// Methods to download assets from S3
+// TODO : Put in module
+const makeDirectory = function(cb) {
+  const pubDir = `${__dirname}/../public/${env}`;
+  Logger.module("API").warn(`Creating directory ${pubDir}`);
+  return mkdirp(pubDir, function(err) {
+    if (err != null) {
+      Logger.module("API").error(`Failed to create directory ${pubDir}: ${err}`);
+      return cb(err);
+    } else {
+      return cb(null);
+    }
+  });
+};
 
-downloadIndexHtml = (url, cb) ->
-  origin = "#{url}/index.html"
-  destination = "#{__dirname}/../public/#{env}/index.html"
-  Logger.module("API").warn "Downloading #{origin} to #{destination}."
+const downloadIndexHtml = function(url, cb) {
+  const origin = `${url}/index.html`;
+  const destination = `${__dirname}/../public/${env}/index.html`;
+  Logger.module("API").warn(`Downloading ${origin} to ${destination}.`);
 
-  request(url: origin, gzip: true)
-  .on 'error', (err) ->
-    cb err
-  .on 'response', (res) ->
-    if res.statusCode != 200
-      cb new Error("request returned status #{res.statusCode}")
-  .pipe fs.createWriteStream(destination)
-  .on 'error', (err) ->
-    Logger.module("API").error "Failed to download #{origin} to #{destination}"
-    cb err
-  .on 'finish', () ->
-    Logger.module("API").warn "Downloaded #{origin} to #{destination}"
-    cb null
+  return request({url: origin, gzip: true})
+  .on('error', err => cb(err)).on('response', function(res) {
+    if (res.statusCode !== 200) {
+      return cb(new Error(`request returned status ${res.statusCode}`));
+    }
+  }).pipe(fs.createWriteStream(destination))
+  .on('error', function(err) {
+    Logger.module("API").error(`Failed to download ${origin} to ${destination}`);
+    return cb(err);
+}).on('finish', function() {
+    Logger.module("API").warn(`Downloaded ${origin} to ${destination}`);
+    return cb(null);
+  });
+};
 
-downloadRegisterHtml = (url, cb) ->
-  origin = "#{url}/register.html"
-  destination = "#{__dirname}/../public/#{env}/register.html"
-  Logger.module("API").warn "Downloading #{origin} to #{destination}."
+const downloadRegisterHtml = function(url, cb) {
+  const origin = `${url}/register.html`;
+  const destination = `${__dirname}/../public/${env}/register.html`;
+  Logger.module("API").warn(`Downloading ${origin} to ${destination}.`);
 
-  request(url: origin, gzip: true)
-  .on 'error', (err) ->
-    Logger.module("API").error "Failed to download #{origin}: #{err}"
-    cb err
-  .on 'response', (res) ->
-    if res.statusCode != 200
-      cb new Error("request returned status #{res.statusCode}")
-  .pipe fs.createWriteStream(destination)
-  .on 'error', (err) ->
-    Logger.module("API").error "Failed to write #{origin} to #{destination}: #{err}"
-    cb err
-  .on 'finish', () ->
-    Logger.module("API").warn "Downloaded #{origin} to #{destination}"
-    cb null
+  return request({url: origin, gzip: true})
+  .on('error', function(err) {
+    Logger.module("API").error(`Failed to download ${origin}: ${err}`);
+    return cb(err);
+}).on('response', function(res) {
+    if (res.statusCode !== 200) {
+      return cb(new Error(`request returned status ${res.statusCode}`));
+    }
+  }).pipe(fs.createWriteStream(destination))
+  .on('error', function(err) {
+    Logger.module("API").error(`Failed to write ${origin} to ${destination}: ${err}`);
+    return cb(err);
+}).on('finish', function() {
+    Logger.module("API").warn(`Downloaded ${origin} to ${destination}`);
+    return cb(null);
+  });
+};
 
-setupDevelopment = () ->
-  server.listen apiPort, () ->
-    server.connected = true
-    Logger.module("SERVER").log "Duelyst '#{env}' started on port #{apiPort}"
+const setupDevelopment = () => server.listen(apiPort, function() {
+  server.connected = true;
+  return Logger.module("SERVER").log(`Duelyst '${env}' started on port ${apiPort}`);
+});
 
-setupProduction = () ->
-  makeDirectory (err) ->
-    if err?
-      Logger.module("SERVER").error "setupDirectory() failed; exiting: #{err}"
-      process.exit(1)
-    else
-      # FIXME: register.html is not currently in the build.
-      downloadRegisterHtml cdnUrl, (err) ->
-        if err?
-          Logger.module("SERVER").warn "downloadRegisterHtml() failed: #{err}"
-      downloadIndexHtml cdnUrl, (err) ->
-        if err?
-          Logger.module("SERVER").error "downloadIndexHtml() failed; exiting: #{err}"
-          process.exit(1)
-        else
-          server.listen apiPort, () ->
-            server.connected = true
-            Logger.module("SERVER").log "Duelyst '#{env}' started on port #{apiPort}"
+const setupProduction = () => makeDirectory(function(err) {
+  if (err != null) {
+    Logger.module("SERVER").error(`setupDirectory() failed; exiting: ${err}`);
+    return process.exit(1);
+  } else {
+    // FIXME: register.html is not currently in the build.
+    downloadRegisterHtml(cdnUrl, function(err) {
+      if (err != null) {
+        return Logger.module("SERVER").warn(`downloadRegisterHtml() failed: ${err}`);
+      }
+    });
+    return downloadIndexHtml(cdnUrl, function(err) {
+      if (err != null) {
+        Logger.module("SERVER").error(`downloadIndexHtml() failed; exiting: ${err}`);
+        return process.exit(1);
+      } else {
+        return server.listen(apiPort, function() {
+          server.connected = true;
+          return Logger.module("SERVER").log(`Duelyst '${env}' started on port ${apiPort}`);
+        });
+      }
+    });
+  }
+});
 
-process.on 'uncaughtException', (err) ->
-  shutdownLib.errorShutdown(err)
+process.on('uncaughtException', err => shutdownLib.errorShutdown(err));
 
-if config.isDevelopment()
-  setupDevelopment()
-else
-  setupProduction()
+if (config.isDevelopment()) {
+  setupDevelopment();
+} else {
+  setupProduction();
+}
