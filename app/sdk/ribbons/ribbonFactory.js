@@ -9,7 +9,7 @@ const Ribbons = require('./ribbonLookup');
 
 class RibbonFactory {
   static initClass() {
-  
+
     this.ribbons = {};
   }
 

@@ -6,7 +6,7 @@
  */
 const ModifierDyingWish = require('./modifierDyingWish');
 const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
-const Races = require('app/sdk/cards/racesLookup.coffee');
+const Races = require("app/sdk/cards/racesLookup");
 
 class ModifierDyingWishDrawMechazorCard extends ModifierDyingWish {
   static initClass() {

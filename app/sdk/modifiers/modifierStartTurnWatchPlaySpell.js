@@ -13,7 +13,7 @@ const PlayCardAction = require('app/sdk/actions/playCardAction');
 const CardType = require('app/sdk/cards/cardType');
 const CONFIG = require('app/common/config');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Factions = require("app/sdk/cards/factionsLookup");
 const _ = require('underscore');
 
 class ModifierStartTurnWatchPlaySpell extends ModifierStartTurnWatch {

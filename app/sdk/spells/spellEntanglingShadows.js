@@ -4,9 +4,9 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const SpellSpawnEntity =   require('./spellSpawnEntity.coffee');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
-const Races = require('app/sdk/cards/racesLookup.coffee');
+const SpellSpawnEntity =   require("./spellSpawnEntity");
+const Factions = require("app/sdk/cards/factionsLookup");
+const Races = require("app/sdk/cards/racesLookup");
 const PlayCardAction = require('app/sdk/actions/playCardAction');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 

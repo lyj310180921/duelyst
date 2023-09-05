@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 //_ = require 'underscore'
 
 const config = require('../config/config.js');
-const Logger = require('../app/common/logger.coffee');
+const Logger = require("../app/common/logger");
 //Consul = require '../server/lib/consul'
 
 const getGameServer = function(){

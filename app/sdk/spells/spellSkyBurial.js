@@ -3,8 +3,8 @@
  * DS101: Remove unnecessary use of Array.from
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('app/sdk/modifiers/modifier.coffee');
-const SpellKillTarget = require('./spellKillTarget.coffee');
+const Modifier = require("app/sdk/modifiers/modifier");
+const SpellKillTarget = require("./spellKillTarget");
 const _ = require('underscore');
 
 class SpellSkyBurial extends SpellKillTarget {

@@ -3,7 +3,7 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const SpellKillTarget = require('./spellKillTarget.coffee');
+const SpellKillTarget = require("./spellKillTarget");
 const HealAction = require('app/sdk/actions/healAction');
 const UtilsPosition = require('app/common/utils/utils_position');
 

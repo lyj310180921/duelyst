@@ -8,7 +8,7 @@
  */
 const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 const CardType = require('app/sdk/cards/cardType');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Factions = require("app/sdk/cards/factionsLookup");
 const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 const GameFormat = require('app/sdk/gameFormat');
 

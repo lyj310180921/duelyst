@@ -11,7 +11,7 @@ const Promise = require('bluebird');
 const util = require('util');
 const FirebasePromises = require('../firebase_promises');
 const DuelystFirebase = require('../duelyst_firebase_module');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require("../../../app/common/logger");
 const colors = require('colors');
 const moment = require('moment');
 const _ = require('underscore');
@@ -28,14 +28,14 @@ const generatePushId = require('../../../app/common/generate_push_id');
 
 // SDK imports
 const SDK = require('../../../app/sdk');
-const CardFactory = require('../../../app/sdk/cards/cardFactory.coffee');
-const Rarity = require('../../../app/sdk/cards/rarityLookup.coffee');
-const Faction = require('../../../app/sdk/cards/factionsLookup.coffee');
-const GameSession = require('../../../app/sdk/gameSession.coffee');
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
-const QuestFactory = require('../../../app/sdk/quests/questFactory.coffee');
-const QuestType = require('../../../app/sdk/quests/questTypeLookup.coffee');
-const CosmeticsFactory = require('../../../app/sdk/cosmetics/cosmeticsFactory.coffee');
+const CardFactory = require("../../../app/sdk/cards/cardFactory");
+const Rarity = require("../../../app/sdk/cards/rarityLookup");
+const Faction = require("../../../app/sdk/cards/factionsLookup");
+const GameSession = require("../../../app/sdk/gameSession");
+const UtilsGameSession = require("../../../app/common/utils/utils_game_session");
+const QuestFactory = require("../../../app/sdk/quests/questFactory");
+const QuestType = require("../../../app/sdk/quests/questTypeLookup");
+const CosmeticsFactory = require("../../../app/sdk/cosmetics/cosmeticsFactory");
 
 class AchievementsModule {
 

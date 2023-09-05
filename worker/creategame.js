@@ -5,9 +5,9 @@
  */
 //# ALL LOGIC FOR CREATING A GAME HERE
 //# SHOULD BE PLACE WHERE SDK IS USED
-const SDK     = require('../app/sdk.coffee');
+const SDK     = require("../app/sdk");
 const RSX     = require('../app/data/resources.js');
-const Logger     = require('../app/common/logger.coffee');
+const Logger     = require("../app/common/logger");
 const _       = require('underscore');
 const request   = require('superagent');
 const config     = require('../config/config.js');

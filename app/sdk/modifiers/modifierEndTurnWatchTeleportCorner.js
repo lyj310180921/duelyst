@@ -4,7 +4,7 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierEndTurnWatch = require('./modifierEndTurnWatch.coffee');
+const ModifierEndTurnWatch = require("./modifierEndTurnWatch");
 const RandomTeleportAction = require('app/sdk/actions/randomTeleportAction');
 const CONFIG = require('app/common/config');
 const _ = require('underscore');

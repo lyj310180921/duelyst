@@ -13,7 +13,7 @@ const CardType = require('app/sdk/cards/cardType');
 const Modifier = require('./modifier');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Factions = require("app/sdk/cards/factionsLookup");
 
 class ModifierOpeningGambitSpawnVanarTokensAroundGeneral extends ModifierOpeningGambit {
   static initClass() {

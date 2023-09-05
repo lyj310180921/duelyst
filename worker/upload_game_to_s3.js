@@ -10,7 +10,7 @@ const url = require('url');
 const zlib = require('zlib');
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
-const Logger = require('../app/common/logger.coffee');
+const Logger = require("../app/common/logger");
 const config = require('../config/config.js');
 
 Promise.promisifyAll(zlib);

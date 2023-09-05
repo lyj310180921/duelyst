@@ -7,7 +7,7 @@
 let exports;
 const Promise = require('bluebird');
 const moment = require('moment');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require("../../app/common/logger");
 const config = require('../../config/config.js');
 const env = config.get("env");
 const ttl = config.get("redis.ttl");

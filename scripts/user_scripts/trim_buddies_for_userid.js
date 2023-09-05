@@ -30,7 +30,7 @@ const firebaseToken = config.get("firebaseToken");
 const UsersModule = require("../../server/lib/users_module");
 const DuelystFirebase= require("../../server/lib/duelyst_firebase_module");
 const fbUtil = require('../../app/common/utils/utils_firebase.js');
-const get_conversation_partners_of_userid = require('./get_conversation_partners_of_userid.coffee');
+const get_conversation_partners_of_userid = require("./get_conversation_partners_of_userid");
 // endregion Requires
 
 const displayProgressInterval = 20;

@@ -4,9 +4,9 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier.coffee');
-const ModifierMyGeneralDamagedWatch = require('./modifierMyGeneralDamagedWatch.coffee');
-const DamageAction = require('app/sdk/actions/damageAction.coffee');
+const Modifier = require("./modifier");
+const ModifierMyGeneralDamagedWatch = require("./modifierMyGeneralDamagedWatch");
+const DamageAction = require("app/sdk/actions/damageAction");
 
 class ModifierMyGeneralDamagedWatchBuffSelfAttackForSame extends ModifierMyGeneralDamagedWatch {
   static initClass() {

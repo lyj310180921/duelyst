@@ -10,7 +10,7 @@ const util = require('util');
 const Promise = require('bluebird');
 const FirebasePromises = require('../firebase_promises');
 const DuelystFirebase = require('../duelyst_firebase_module');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require("../../../app/common/logger");
 const colors = require('colors');
 const moment = require('moment');
 const _ = require('underscore');
@@ -23,10 +23,10 @@ const generatePushId = require('../../../app/common/generate_push_id');
 
 // SDK imports
 const SDK = require('../../../app/sdk');
-const GiftCrateFactory = require('../../../app/sdk/giftCrates/giftCrateFactory.coffee');
+const GiftCrateFactory = require("../../../app/sdk/giftCrates/giftCrateFactory");
 const GiftCrateLookup = require("../../../app/sdk/giftCrates/giftCrateLookup");
-const CosmeticsFactory = require('../../../app/sdk/cosmetics/cosmeticsFactory.coffee');
-const CosmeticsLookup = require('../../../app/sdk/cosmetics/cosmeticsLookup.coffee');
+const CosmeticsFactory = require("../../../app/sdk/cosmetics/cosmeticsFactory");
+const CosmeticsLookup = require("../../../app/sdk/cosmetics/cosmeticsLookup");
 
 class GiftCrateModule {
 

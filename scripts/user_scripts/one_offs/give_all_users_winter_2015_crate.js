@@ -22,7 +22,7 @@ const Firebase = require("firebase");
 const _ = require("underscore");
 const fbRef = new Firebase(config.get("firebase"));
 const moment = require('moment');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require("../../../app/common/logger");
 const Promise = require('bluebird');
 const knex = require('../../../server/lib/data_access/knex');
 const ProgressBar = require('progress');
@@ -31,9 +31,9 @@ const ProgressBar = require('progress');
 const firebaseToken = config.get("firebaseToken");
 const DuelystFirebase = require("../../../server/lib/duelyst_firebase_module");
 const fbUtil = require('../../../app/common/utils/utils_firebase.js');
-const GiftCrateModule = require('../../../server/lib/data_access/gift_crate.coffee');
+const GiftCrateModule = require("../../../server/lib/data_access/gift_crate");
 
-const GiftCrateLookup = require('../../../app/sdk/giftCrates/giftCrateLookup.coffee');
+const GiftCrateLookup = require("../../../app/sdk/giftCrates/giftCrateLookup");
 // endregion Requires
 
 Logger.enabled = false;

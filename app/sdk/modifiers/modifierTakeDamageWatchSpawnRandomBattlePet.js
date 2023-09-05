@@ -4,8 +4,8 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const ModifierTakeDamageWatchSpawnEntity = require('./modifierTakeDamageWatchSpawnEntity');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
-const Races = require('app/sdk/cards/racesLookup.coffee');
+const Factions = require("app/sdk/cards/factionsLookup");
+const Races = require("app/sdk/cards/racesLookup");
 
 class ModifierTakeDamageWatchSpawnRandomBattlePet extends ModifierTakeDamageWatchSpawnEntity {
   static initClass() {

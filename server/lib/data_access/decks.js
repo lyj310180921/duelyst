@@ -6,7 +6,7 @@
 const Promise = require('bluebird');
 const _ = require('underscore');
 const util = require('util');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require("../../../app/common/logger");
 const colors = require('colors');
 const moment = require('moment');
 const knex = require("../data_access/knex");
@@ -17,7 +17,7 @@ const crypto = require('crypto');
 
 // SDK imports
 const SDK = require('../../../app/sdk');
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
+const UtilsGameSession = require("../../../app/common/utils/utils_game_session");
 
 class DecksModule {
   /**

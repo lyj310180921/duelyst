@@ -14,7 +14,7 @@ const CONFIG = require('app/common/config');
 const Storage = require('app/common/storage');
 const GameSession = require('./gameSession');
 const ApplyCardToBoardAction = require('./actions/applyCardToBoardAction');
-const GameType = require('app/sdk/gameType.coffee');
+const GameType = require("app/sdk/gameType");
 
 var NetworkManager = (function() {
   let instance = undefined;

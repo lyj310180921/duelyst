@@ -8,8 +8,8 @@ const _ = require('underscore');
 const ModifierSurviveDamageWatch =  require('./modifierSurviveDamageWatch');
 const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
 const RemoveAction = require('app/sdk/actions/removeAction');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
-const Races = require('app/sdk/cards/racesLookup.coffee');
+const Factions = require("app/sdk/cards/factionsLookup");
+const Races = require("app/sdk/cards/racesLookup");
 
 class ModifierSurviveDamageWatchBur extends ModifierSurviveDamageWatch {
   static initClass() {

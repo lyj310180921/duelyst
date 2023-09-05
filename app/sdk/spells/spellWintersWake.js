@@ -5,7 +5,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const SpellApplyModifiers = require('./spellApplyModifiers.coffee');
+const SpellApplyModifiers = require("./spellApplyModifiers");
 const ModifierWall = require('app/sdk/modifiers/modifierWall');
 
 class SpellWintersWake extends SpellApplyModifiers {

@@ -7,9 +7,9 @@
 /*
 Job - Rotate Boss Battles
 */
-const DuelystFirebase = require('../../server/lib/duelyst_firebase_module.coffee');
-const Logger = require('../../app/common/logger.coffee');
-const Cards = require('../../app/sdk/cards/cardsLookup.coffee');
+const DuelystFirebase = require("../../server/lib/duelyst_firebase_module");
+const Logger = require("../../app/common/logger");
+const Cards = require("../../app/sdk/cards/cardsLookup");
 const moment = require('moment');
 
 // Collect valid boss IDs.

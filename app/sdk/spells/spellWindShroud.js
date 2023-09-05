@@ -4,10 +4,10 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('../../common/config');
-const SpellSpawnEntity = require('./spellSpawnEntity.coffee');
-const CardType = require('./../cards/cardType.coffee');
-const Cards = require('../cards/cardsLookupComplete.coffee');
-const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
+const SpellSpawnEntity = require("./spellSpawnEntity");
+const CardType = require("./../cards/cardType");
+const Cards = require("../cards/cardsLookupComplete");
+const UtilsGameSession = require("../../common/utils/utils_game_session");
 const _ = require('underscore');
 
 class SpellWindShroud extends SpellSpawnEntity {

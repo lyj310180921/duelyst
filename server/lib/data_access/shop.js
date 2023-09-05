@@ -15,7 +15,7 @@ const _ = require('underscore');
 
 const FirebasePromises = require('../firebase_promises');
 const DuelystFirebase = require('../duelyst_firebase_module');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require("../../../app/common/logger");
 const Errors = require('../custom_errors');
 const knex = require("../data_access/knex");
 const generatePushId = require('../../../app/common/generate_push_id');

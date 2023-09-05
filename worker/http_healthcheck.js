@@ -7,7 +7,7 @@
 // Responds to /health endpoint with status 200
 // Otherwise responds with status 404
 
-const Logger     = require('../app/common/logger.coffee');
+const Logger     = require("../app/common/logger");
 const http     = require('http');
 const url     = require('url');
 const os = require('os');

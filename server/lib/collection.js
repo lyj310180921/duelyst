@@ -8,10 +8,10 @@ const _ = require('underscore');
 const Promise = require('bluebird');
 
 const CONFIG = require('../../app/common/config');
-const Logger = require('../../app/common/logger.coffee');
-const SDK = require('../../app/sdk.coffee');
-const InventoryModule = require('./data_access/inventory.coffee');
-const knex = require('./data_access/knex.coffee');
+const Logger = require("../../app/common/logger");
+const SDK = require("../../app/sdk");
+const InventoryModule = require("./data_access/inventory");
+const knex = require("./data_access/knex");
 
 // Helper function to grant a full card collection to users.
 // This code is nearly identical to the /api/me/qa/inventory/fill_collection handler.

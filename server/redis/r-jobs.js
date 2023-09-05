@@ -1,6 +1,6 @@
 let Jobs;
 const kue = require('kue');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require("../../app/common/logger");
 const config = require('../../config/config.js');
 const env = config.get('env');
 

@@ -7,7 +7,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const ModifierManaCostChange = require('./modifierManaCostChange');
-const ModifierMyGeneralDamagedWatch = require('./modifierMyGeneralDamagedWatch.coffee');
+const ModifierMyGeneralDamagedWatch = require("./modifierMyGeneralDamagedWatch");
 const i18next = require('i18next');
 
 class ModifierCostChangeIfMyGeneralDamagedLastTurn extends ModifierMyGeneralDamagedWatch {

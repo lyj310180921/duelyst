@@ -6,7 +6,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const SpellShadowspawn = require('./spellShadowspawn.coffee');
+const SpellShadowspawn = require("./spellShadowspawn");
 const ModifierWraithlingFury = require('app/sdk/modifiers/modifierWraithlingFury');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 

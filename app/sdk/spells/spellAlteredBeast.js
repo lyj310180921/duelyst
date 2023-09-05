@@ -1,6 +1,6 @@
 const SpellAspectBase = require('./spellAspectBase');
-const Cards = require('app/sdk/cards/cardsLookup.coffee');
-const Races = require('app/sdk/cards/racesLookup.coffee');
+const Cards = require("app/sdk/cards/cardsLookup");
+const Races = require("app/sdk/cards/racesLookup");
 const _ = require('underscore');
 
 class SpellAlteredBeast extends SpellAspectBase {

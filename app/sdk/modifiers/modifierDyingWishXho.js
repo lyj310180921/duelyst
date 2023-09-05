@@ -8,7 +8,7 @@ const ModifierDyingWish = require('./modifierDyingWish');
 const ModifierManaCostChange = require('./modifierManaCostChange');
 const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 const CardType = require('app/sdk/cards/cardType');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Factions = require("app/sdk/cards/factionsLookup");
 
 class ModifierDyingWishXho extends ModifierDyingWish {
   static initClass() {

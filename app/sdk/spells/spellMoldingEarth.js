@@ -5,11 +5,11 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Logger = require('app/common/logger');
-const SpellSpawnEntity = require('./spellSpawnEntity.coffee');
+const SpellSpawnEntity = require("./spellSpawnEntity");
 const CardType = require('app/sdk/cards/cardType');
 const SpellFilterType = require('./spellFilterType');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
-const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
+const UtilsGameSession = require("../../common/utils/utils_game_session");
 const CONFIG = require('app/common/config');
 const ModifierBackstab = require('app/sdk/modifiers/modifierBackstab');
 const ModifierBlastAttack = require('app/sdk/modifiers/modifierBlastAttack');

@@ -7,8 +7,8 @@
  */
 const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
 const CardType = require('app/sdk/cards/cardType');
-const SwapUnitAllegianceAction = require('app/sdk/actions/swapUnitAllegianceAction.coffee');
-const RefreshExhaustionAction =  require('app/sdk/actions/refreshExhaustionAction.coffee');
+const SwapUnitAllegianceAction = require("app/sdk/actions/swapUnitAllegianceAction");
+const RefreshExhaustionAction =  require("app/sdk/actions/refreshExhaustionAction");
 const ModifierEndTurnWatchSwapAllegiance = require('app/sdk/modifiers/modifierEndTurnWatchSwapAllegiance');
 
 class ModifierDealDamageWatchControlEnemyMinionUntilEOT extends ModifierDealDamageWatch {

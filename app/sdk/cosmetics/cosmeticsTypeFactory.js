@@ -5,7 +5,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 
-const CosmeticsTypeLookup = require('./cosmeticsTypeLookup.coffee');
+const CosmeticsTypeLookup = require("./cosmeticsTypeLookup");
 const i18next = require('i18next');
 
 class CosmeticsTypeFactory {

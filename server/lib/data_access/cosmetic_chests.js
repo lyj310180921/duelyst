@@ -11,7 +11,7 @@ const util = require('util');
 const FirebasePromises = require('../firebase_promises');
 const DuelystFirebase = require('../duelyst_firebase_module');
 const GamesModule = require('./games');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require("../../../app/common/logger");
 const colors = require('colors');
 const moment = require('moment');
 const _ = require('underscore');
@@ -26,9 +26,9 @@ const {Redis, Jobs, GameManager} = require('../../redis/');
 
 // SDK imports
 const SDK = require('../../../app/sdk');
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
+const UtilsGameSession = require("../../../app/common/utils/utils_game_session");
 
-const InventoryModule = require('./inventory.coffee');
+const InventoryModule = require("./inventory");
 
 class CosmeticChestsModule {
   static initClass() {

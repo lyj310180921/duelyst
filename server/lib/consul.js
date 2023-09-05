@@ -7,7 +7,7 @@
  */
 const os         = require('os');
 const config     = require('../../config/config.js');
-const Logger     = require('../../app/common/logger.coffee');
+const Logger     = require("../../app/common/logger");
 const Colors     = require('colors');
 const Promise   = require('bluebird');
 const request   = require('superagent');

@@ -12,7 +12,7 @@ const glicko2 = require('glicko2');
 
 const FirebasePromises = require('../firebase_promises');
 const DuelystFirebase = require('../duelyst_firebase_module');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require("../../../app/common/logger");
 const colors = require('colors');
 const moment = require('moment');
 const _ = require('underscore');
@@ -31,10 +31,10 @@ const {Redis, Jobs, SRankManager} = require('../../redis/');
 const SDK = require('../../../app/sdk');
 const Cards = require('../../../app/sdk/cards/cardsLookupComplete');
 const RankFactory = require('../../../app/sdk/rank/rankFactory');
-const GameSession = require('../../../app/sdk/gameSession.coffee');
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
-const CardFactory = require('../../../app/sdk/cards/cardFactory.coffee');
-const Rarity = require('../../../app/sdk/cards/rarityLookup.coffee');
+const GameSession = require("../../../app/sdk/gameSession");
+const UtilsGameSession = require("../../../app/common/utils/utils_game_session");
+const CardFactory = require("../../../app/sdk/cards/cardFactory");
+const Rarity = require("../../../app/sdk/cards/rarityLookup");
 
 class RankModule {
   static initClass() {

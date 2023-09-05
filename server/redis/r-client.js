@@ -7,7 +7,7 @@ let RedisClient;
 const Promise = require('bluebird');
 const redis = require('redis');
 
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require("../../app/common/logger");
 const config = require('../../config/config.js');
 
 Promise.promisifyAll(redis);

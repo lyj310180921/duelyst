@@ -1,7 +1,7 @@
 const _ = require('underscore');
 
 /**
- * resource.js - map of resource usage data to resources.
+ * resource.js - 资源使用数据到资源的映射。
  * @example
  * // example texture
  * texture_alias: {name: "texture_alias", img: "path"},

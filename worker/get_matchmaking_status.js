@@ -4,12 +4,12 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const config     = require('../config/config.js');
-const Logger     = require('../app/common/logger.coffee');
+const Logger     = require("../app/common/logger");
 const Colors     = require('colors');
 const Promise   = require('bluebird');
 const request   = require('superagent');
 const Consul     = require('../server/lib/consul');
-const CustomError = require('../server/lib/custom_errors.coffee');
+const CustomError = require("../server/lib/custom_errors");
 
 const isMatchmakingActiveAsync = function() {
   if (!config.get('consul.enabled')) {

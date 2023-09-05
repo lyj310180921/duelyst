@@ -4,7 +4,7 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const SpellAspectBase = require('./spellAspectBase.coffee');
+const SpellAspectBase = require("./spellAspectBase");
 
 class SpellEchoingShriek extends SpellAspectBase {
   static initClass() {
